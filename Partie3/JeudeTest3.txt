@@ -1,0 +1,97 @@
+int main(){
+    CellKey** liste = (CellKey**)malloc(sizeof(CellKey*));
+    Key* key = (Key*)malloc(sizeof(Key));
+    init_key(key,10,5);
+    Key* key2 = (Key*)malloc(sizeof(Key));
+    init_key(key2,2,3);
+    *liste = create_cell_key(key);
+    liste = ajouter_en_tete(liste,key2);
+    CellKey* temp;
+    while(*liste){
+        printf("%ld %ld\n", (*liste)->data->s_u, (*liste)->data->n);
+        temp = (*liste)->next;
+        free(*liste);
+        *liste = temp;
+    }
+    free(key);
+    free(key2);
+    free(liste);
+    return 0;
+}
+
+int main(){
+    CellKey** liste = read_public_keys("Partie3/candidates.txt");
+    CellKey* temp;
+    while(*liste){
+        printf("%lx %lx\n", (*liste)->data->s_u, (*liste)->data->n);
+        temp = (*liste)->next;
+        free((*liste)->data);
+        free(*liste);
+        *liste = temp;
+    }
+    free(liste);
+    return 0;
+}
+
+int main(){
+    CellKey** liste = read_public_keys("Partie2/candidates.txt");
+    print_list_keys(*liste);
+    delete_list_keys(liste);
+    return 0;
+}
+
+int main(){
+
+    // Initialisation de la liste de cp
+    CellProtected** liste = (CellProtected**)malloc(sizeof(CellProtected*));
+    *liste = NULL;
+    // Création de 2 keys
+    Key* pkey1 = (Key*)malloc(sizeof(Key));
+    Key* skey1 = (Key*)malloc(sizeof(Key));
+    init_pair_keys(pkey1,skey1,3,7);
+    // Création d'une signature et d'un protected dans une cell
+    //char* mess1 = (char*)malloc(sizeof(char)*256);
+    char* mess1 = key_to_str(pkey1);
+    Signature* sgn1 = sign(mess1,skey1);
+    Protected* pr1 = init_protected(pkey1,mess1,sgn1);
+    // Ajout dans liste
+    ajouter_en_tete_cp(liste,pr1);
+    // Création de 2 nouvelles keys
+    Key* pkey2 = (Key*)malloc(sizeof(Key));
+    Key* skey2 = (Key*)malloc(sizeof(Key));
+    init_pair_keys(pkey2,skey2,3,7);
+    // Création d'une signature et d'un protected dans une cell
+    char* mess2 = key_to_str(pkey2);
+    Signature* sgn2 = sign(mess2,skey2);
+    Protected* pr2 = init_protected(pkey2,mess2,sgn2);
+    // Ajout dans liste
+    ajouter_en_tete_cp(liste,pr2);
+    // Affichage liste
+    print_list_protected(*liste);
+
+    free(skey1);
+    free(skey2);
+    delete_list_protected(liste);
+    return 0;
+}
+
+int main(){
+    CellProtected** liste = read_protected("decla.txt");
+    print_list_protected(*liste);
+    delete_list_protected(liste);
+    return 0;
+}
+
+int main(){
+    CellProtected** liste = read_protected("Partie2/declarations.txt");
+    printf("Liste avec fraude:\n");
+    print_list_protected(*liste);
+
+    verify_LCP(liste);
+
+    printf("\nListe sans fraude:\n");
+    print_list_protected(*liste);
+
+    delete_list_protected(liste);
+    return 0;
+}
