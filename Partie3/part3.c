@@ -155,22 +155,22 @@ void verify_LCP(CellProtected** liste){ // supprime de la liste liste les décla
     }
 }
 
-HashCell* create_hashcell(Key* key){
+HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une table de hachage contenant une key et une valeur initialisé à 0
     HashCell* HC = (HashCell*)malloc(sizeof(HashCell));
     HC->key = key;
     HC->val = 0;
     return HC;
 }
 
-int hash_function(Key* key, int size){
+int hash_function(Key* key, int size){ // fonction de hachage
     return (key->s_u*key->n)%size;
 }
 
-int find_position(HashTable* t, Key* key){
+int find_position(HashTable* t, Key* key){ // Retourne l'indice de la key (si elle n'est pas dedans retourne l'indice ou elle dervra etre) dans le tableau de hachage t
     int pos = hash_function(key,t->size);
-    while(t->tab[pos] != NULL){
-        if(t->tab[pos]->key != key){
-            if(pos == t->size-1){
+    while(t->tab[pos] != NULL){ // à chaque tour de boucle, si la case est vide, alors c'est ici que key doit etre placée
+        if(t->tab[pos]->key != key){ // si la case n'est pas vide mais est déjà occupée par une autre clef, alors on passe à la case suivante
+            if(pos == t->size-1){ // si on est à la fin de la table, on revient au début pour trouver une place à key
                 pos = 0;
             }
             else{
@@ -184,30 +184,30 @@ int find_position(HashTable* t, Key* key){
     return pos;
 }
 
-HashTable* create_hashtable(CellKey* keys, int size){
+HashTable* create_hashtable(CellKey* keys, int size){  // alloue et initialise une table de hachage via une liste de clefs <= à sa taille
     HashTable* HT = (HashTable*)malloc(sizeof(HashTable));
     HT->size = size;
     HT->tab = (HashCell**)malloc(sizeof(HashCell*)*size);
-    for(int i=0;i<size;i++){
+    for(int i=0;i<size;i++){ // Il faut initiliser toutes les cases de la table à NULL
         HT->tab[i] = NULL;
     }
     int pos;
-    while(keys){
+    while(keys){ // On parcourt la liste keys 
         pos = find_position(HT, keys->data);
         if(!HT->tab[pos]){
-            HT->tab[pos] = create_hashcell(keys->data); // Faut-il dupliquer ????
+            HT->tab[pos] = create_hashcell(keys->data); // Si la clef key->data n'est pas dans la table, alors on la place à l'indice retourné par find_postion // Faut-il dupliquer la clef ?
         }
         keys = keys->next;
     }
     return HT;
 }
 
-void delete_hashtable(HashTable* t){
-    for(int i=0;i<t->size;i++){
-        free(t->tab[i]);
+void delete_hashtable(HashTable* t){ // Supprime et libère la table de hachage et les cellules de hachages (Ici on a pas duppliqué les clefs de la liste keys alors on ne les frees pas, on sera peut etre ammené à changer ça)
+    for(int i=0;i<t->size;i++){ // On parcourt la table de hachage t
+        free(t->tab[i]); // On libère chaque cellule de hachage // Faut il aussi free les keys qui sont dans la liste CellKeys passée en paramètre de create_hashtable ?
     }
-    free(t->tab);
-    free(t);
+    free(t->tab); // On libère la table
+    free(t); // On libère la structure
 }
 
 Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){}
