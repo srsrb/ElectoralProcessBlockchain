@@ -163,7 +163,7 @@ HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une t
 }
 
 int hash_function(Key* key, int size){ // fonction de hachage
-    return (key->s_u*key->n)%size;
+    return ((key->s_u*key->n)+1)%size;
 }
 
 int find_position(HashTable* t, Key* key){ // Retourne l'indice de la key (si elle n'est pas dedans retourne l'indice ou elle dervra etre) dans le tableau de hachage t
