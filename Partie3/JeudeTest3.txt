@@ -97,14 +97,28 @@ int main(){
 }
 
 int main(){
+    srand(time(NULL));
     CellKey** liste = read_public_keys("Partie2/candidates.txt");
-    HashTable* t = create_hashtable(*liste,100);
-    for(int i=0;i<100;i++){
+    HashTable* t = create_hashtable(*liste,20);
+    for(int i=0;i<t->size;i++){
         if(t->tab[i]){
-            printf("");
+            printf("%d: (%lx,%lx)\n",i,t->tab[i]->key->s_u,t->tab[i]->key->n);
         }
     }
     delete_hashtable(t);
     delete_list_keys(liste);
     return 0;
+}
+
+int main(){
+    srand(time(NULL));
+    generate_random_data(10,2);
+    CellKey** candidates = read_public_keys("Partie2/candidates.txt");
+    CellKey** voters = read_public_keys("Partie2/keys.txt");
+    CellProtected** decl = read_protected("Partie2/declarations.txt");
+    Key* winner = compute_winner(*decl,*candidates,*voters,2,10);
+    printf("Winner = (%lx,%lx)\n",winner->s_u,winner->n);
+    delete_list_keys(candidates);
+    delete_list_keys(voters);
+    delete_list_protected(decl);
 }

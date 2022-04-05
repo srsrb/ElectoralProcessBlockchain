@@ -163,13 +163,13 @@ HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une t
 }
 
 int hash_function(Key* key, int size){ // fonction de hachage
-    return ((key->s_u*key->n)+1)%size;
+    return (key->s_u*key->n)%size;
 }
 
 int find_position(HashTable* t, Key* key){ // Retourne l'indice de la key (si elle n'est pas dedans retourne l'indice ou elle dervra etre) dans le tableau de hachage t
     int pos = hash_function(key,t->size);
     while(t->tab[pos] != NULL){ // à chaque tour de boucle, si la case est vide, alors c'est ici que key doit etre placée
-        if(t->tab[pos]->key != key){ // si la case n'est pas vide mais est déjà occupée par une autre clef, alors on passe à la case suivante
+        if(t->tab[pos]->key->s_u != key->s_u || t->tab[pos]->key->n != key->n){ // si la case n'est pas vide mais est déjà occupée par une autre clef, alors on passe à la case suivante
             if(pos == t->size-1){ // si on est à la fin de la table, on revient au début pour trouver une place à key
                 pos = 0;
             }
@@ -210,4 +210,46 @@ void delete_hashtable(HashTable* t){ // Supprime et libère la table de hachage 
     free(t); // On libère la structure
 }
 
-Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){}
+Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
+    HashTable* Hc = create_hashtable(candidates,sizeC);
+    HashTable* Hv = create_hashtable(voters,sizeV);
+    verify_LCP(&decl);
+    int posC,posV;
+    Key* mess;
+    CellProtected* temp = decl;
+    while(temp){
+        mess = str_to_key(temp->data->mess);
+        posC = find_position(Hc,mess);
+        posV = find_position(Hv,temp->data->pKey);
+        if(Hv->tab[posV]->val == 0 && Hc->tab[posC]->key->s_u == mess->s_u && Hc->tab[posC]->key->n == mess->n){
+            Hv->tab[posV]->val++;
+            Hc->tab[posC]->val++;
+        }
+        free(mess);
+        temp = temp->next;
+    }
+    int max = 0;
+    int posmax = max;
+    for(int i=0;i<Hc->size;i++){
+        if(Hc->tab[i] && Hc->tab[i]->val >= max){ //Ici pas >= mais > -> on verra puisque pas écrit
+            max = Hc->tab[i]->val;
+            posmax = i;
+        }
+        // else if(Hc->tab[i]->val == max){
+        //     //On fait quoi ? C'est pas écrit mdrr
+        // }
+    }
+
+    CellKey* temp2 = candidates;
+    while(temp2){
+        if(temp2->data->n == Hc->tab[posmax]->key->n && temp2->data->s_u == Hc->tab[posmax]->key->s_u){
+            break;
+        }
+        temp2 = temp2->next;
+    }
+
+    delete_hashtable(Hc);
+    delete_hashtable(Hv);
+
+    return temp2->data;
+}
