@@ -136,6 +136,7 @@ void verify_LCP(CellProtected** liste){ // supprime de la liste liste les décla
     CellProtected* parcours = *liste;
     CellProtected* avant = NULL;
     CellProtected* temp = NULL;
+    int i=0;
     while(parcours){
         if(verify(parcours->data)){ // si la signature est valide on continue
             avant = parcours;
@@ -143,16 +144,19 @@ void verify_LCP(CellProtected** liste){ // supprime de la liste liste les décla
             continue;
         }
         if(avant){ // si la cellule n'est pas valide et n'est pas en tête de liste
+            i++;
             avant->next = parcours->next;
             delete_cell_protected(parcours);
             parcours = avant->next;
         } else{ // la cellule n'est pas valide et est en tête de liste
+            i++;
             temp = parcours->next;
             delete_cell_protected(parcours);
             parcours = temp;
             *liste = parcours;
         }
     }
+    printf("%d\n",i);
 }
 
 HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une table de hachage contenant une key et une valeur initialisé à 0

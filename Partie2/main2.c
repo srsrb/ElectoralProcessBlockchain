@@ -5,6 +5,7 @@
 #include "../Projet.h"
 
 int main(){    
+    srand(time(NULL));
     // Testing Init Keys
     Key* pKey = (Key*)malloc(sizeof(Key));
     Key* sKey = (Key*)malloc(sizeof(Key));
