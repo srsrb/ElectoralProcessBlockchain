@@ -142,9 +142,9 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
         return;
     }
     
-    FILE* keys = fopen("Partie2/keys.txt", "w");
-    FILE* candidates = fopen("Partie2/candidates.txt", "w");
-    FILE* declarations = fopen("Partie2/declarations.txt", "w");
+    FILE* keys = fopen("data/keys.txt", "w");
+    FILE* candidates = fopen("data/candidates.txt", "w");
+    FILE* declarations = fopen("data/declarations.txt", "w");
     
     char* mess;
     char* prtostr;

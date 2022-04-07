@@ -1,3 +1,8 @@
+//PARAMETRES
+
+#define NBV 10
+#define NBC 2
+
 // PARTIE 1
 
 int is_prime_naive(long p);
@@ -131,3 +136,13 @@ HashTable* create_hashtable(CellKey* keys, int size);
 void delete_hashtable(HashTable* t);
 
 Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV);
+
+// PARTIE 4
+
+typedef struct block{
+    Key* author;
+    CellProtected* votes;
+    unsigned char* hash;
+    unsigned char* previous_hash;
+    int nonce;
+} Block;

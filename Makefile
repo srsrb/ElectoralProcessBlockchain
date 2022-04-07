@@ -1,30 +1,44 @@
 CC=gcc
 CFLAGS=-Wall -lm
 
-all : exe
+PART1=./src/Partie1
+PART2=./src/Partie2/
+PART3=./src/Partie3/
+PART4=./src/Partie4/
 
-exe : main.o Partie1/part1.o Partie2/part2.o Partie3/part3.o Partie4/part4.o
-	$(CC) -o exe main.o Partie1/part1.o Partie2/part2.o Partie3/part3.o Partie4/part4.o $(CFLAGS)
+BIN=./bin
+OBJ=./obj
 
-main.o : main.c
-	$(CC) -o main.o -c main.c $(CFLAGS)
+all : main1 main2 main3 main4
 
-part1.o : Partie1/part1.c
-	$(CC) -o Partie1/part1.o -c Partie1/part1.c $(CFLAGS)
+main1 : $(PART1)/main1.c $(OBJ)/part1.o
+	$(CC) $^ -o $(BIN)/main1.bin $(CFLAGS)
 
-part2.o : Partie2/part2.c
-	$(CC) -o Partie2/part2.o -c Partie2/part2.c $(CFLAGS)
+main2 : $(PART2)/main2.c $(OBJ)/part1.o $(OBJ)/part2.o
+	$(CC) $^ -o $(BIN)/main2.bin $(CFLAGS)
 
-part3.o : Partie3/part3.c
-	$(CC) -o Partie3/part3.o -c Partie3/part3.c $(CFLAGS)
+main3 : $(PART3)/main3.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o
+	$(CC) $^ -o $(BIN)/main3.bin $(CFLAGS)
 
-part4.o : Partie4/part4.c
-	$(CC) -o Partie4/part4.o -c Partie4/part4.c $(CFLAGS)
+main4 : $(PART4)/main4.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/part4.o
+	$(CC) $^ -o $(BIN)/main4.bin $(CFLAGS)
+
+$(OBJ)/part1.o : $(PART1)/part1.c
+	$(CC) -o $@ -c $^ $(CFLAGS)
+
+$(OBJ)/part2.o : $(PART2)/part2.c
+	$(CC) -o $@ -c $^ $(CFLAGS)
+
+$(OBJ)/part3.o : $(PART3)/part3.c
+	$(CC) -o $@ -c $^ $(CFLAGS)
+
+$(OBJ)/part4.o : $(PART4)/part4.c
+	$(CC) -o $@ -c $^ $(CFLAGS)
 
 clean :
-	rm -rf Partie1/*.o
-	rm -rf Partie2/*.o
-	rm -rf Partie3/*.o
-	rm -rf Partie4/*.o
-	rm -rf *.o
-	rm exe
+	rm $(OBJ)/*
+
+bigclean :
+	clean
+	rm $(BIN)/*
+	rm ./data/*

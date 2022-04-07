@@ -27,7 +27,7 @@ int main(){
     printf("cle privee = (%ld, %ld) \n", u, n);
 
     // Chiffrement
-    char message[1000] = "Hello";
+    char message[1000] = "Hello World!";
     int len = strlen(message);
     long* crypted = encrypt(message, s, n);
 
