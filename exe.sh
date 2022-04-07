@@ -8,7 +8,7 @@ then
     exit
 fi
 
-if [ $1 -lt 1 -o $1 -ge 4 ]
+if [ $1 -lt 1 -o $1 -ge 5 ]
 then
     echo "Il n'y a seulement que 4 parties exécutables. Entrer un chiffre entre 1 et 4."
     exit
