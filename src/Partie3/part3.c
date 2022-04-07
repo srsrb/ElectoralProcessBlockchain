@@ -44,7 +44,7 @@ CellKey** read_public_keys(char* txt){ // retourne une liste chaînée contenant
 void print_list_keys(CellKey* LCK){ // affiche une liste chaînée de Cellkey
     CellKey* temp = LCK;
     while(temp){
-        printf("%lx %lx\n", temp->data->s_u, temp->data->n);
+        printf("(%lx,%lx)\n", temp->data->s_u, temp->data->n);
         temp = temp->next;
     }
 }
