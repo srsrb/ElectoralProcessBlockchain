@@ -14,9 +14,9 @@ void init_key(Key* key, long val, long n){ // initialise un clé key déjà allo
 
 void init_pair_keys(Key* pKey, Key* sKey, long low_size, long up_size){ // initialise une paire de clés déjà allouées
     long p, q;
-    p = random_prime_number(low_size, up_size, 5000);
+    p = random_prime_number(low_size, up_size, 256);
     do{ // tant que les nombres premiers ne sont pas différents on en génère un autre
-        q = random_prime_number(low_size, up_size, 5000);
+        q = random_prime_number(low_size, up_size, 256);
     } while(p == q);
     long n, s, u;
     generate_key_values(p, q, &n, &s, &u); // génère la valeur d'une paire de clés
@@ -141,7 +141,6 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
         printf("nv et nc doivent être non nuls et nc doit être inférieur ou égal à nv");
         return;
     }
-    
     FILE* keys = fopen("data/keys.txt", "w");
     FILE* candidates = fopen("data/candidates.txt", "w");
     FILE* declarations = fopen("data/declarations.txt", "w");

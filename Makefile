@@ -2,9 +2,9 @@ CC=gcc
 CFLAGS=-Wall -lm
 
 PART1=./src/Partie1
-PART2=./src/Partie2/
-PART3=./src/Partie3/
-PART4=./src/Partie4/
+PART2=./src/Partie2
+PART3=./src/Partie3
+PART4=./src/Partie4
 
 BIN=./bin
 OBJ=./obj
@@ -38,7 +38,6 @@ $(OBJ)/part4.o : $(PART4)/part4.c
 clean :
 	rm $(OBJ)/*
 
-bigclean :
-	clean
+bigclean: clean
 	rm $(BIN)/*
 	rm ./data/*

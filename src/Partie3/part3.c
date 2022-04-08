@@ -93,7 +93,7 @@ CellProtected** read_protected(char* txt){ // retourne une liste chaînée conte
     char key[50];
     char mess[50];
     char sgn[50];
-    while(fgets(buffer,100,f)){
+    while(fgets(buffer,400,f)){
         sscanf(buffer, "Declaration: %s %s %s", key, mess, sgn);
         sprintf(buffer,"%s %s %s", key, mess, sgn);
         pr = str_to_protected(buffer);

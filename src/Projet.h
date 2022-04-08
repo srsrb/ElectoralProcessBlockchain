@@ -146,3 +146,13 @@ typedef struct block{
     unsigned char* previous_hash;
     int nonce;
 } Block;
+
+Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned char *previous_hash, int nonce);
+
+void delete_block(Block *b);
+
+void write_block(Block* b);
+
+Block* read_block(char* txt);
+
+char* block_to_str(Block* b);
