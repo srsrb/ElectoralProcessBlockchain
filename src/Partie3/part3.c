@@ -221,7 +221,7 @@ Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, i
         mess = str_to_key(temp->data->mess);
         posC = find_position(Hc,mess);
         posV = find_position(Hv,temp->data->pKey);
-        if(Hv->tab[posV]->val == 0 && Hc->tab[posC]->key->s_u == mess->s_u && Hc->tab[posC]->key->n == mess->n){
+        if(Hc->tab[posC] && Hv->tab[posV] && Hv->tab[posV]->val == 0 && Hc->tab[posC]->key->s_u == mess->s_u && Hc->tab[posC]->key->n == mess->n){
             Hv->tab[posV]->val++;
             Hc->tab[posC]->val++;
         }

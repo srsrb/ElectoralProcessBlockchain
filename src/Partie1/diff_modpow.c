@@ -50,7 +50,7 @@ double temps(long a, long m, long n){ // temps pour modpow
 
 int main(){
 
-    FILE* f = fopen("1-5.txt", "w");
+    FILE* f = fopen("data/1-5.txt", "w");
 
     for(long i = 5000; i < 10000; i += 500){
         fprintf(f,"%.8f %.8f %ld\n", temps(15, i, 5), temps_naive(15, i, 5), i);
