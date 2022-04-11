@@ -156,3 +156,5 @@ void write_block(Block* b);
 Block* read_block(char* txt);
 
 char* block_to_str(Block* b);
+
+char* hash_SHA(const char* s);

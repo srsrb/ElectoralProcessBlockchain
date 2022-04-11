@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -lm
+CFLAGS=-Wall -lm -lssl -lcrypto
 
 PART1=./src/Partie1
 PART2=./src/Partie2

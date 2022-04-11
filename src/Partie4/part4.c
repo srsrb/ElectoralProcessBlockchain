@@ -31,12 +31,26 @@ void delete_block(Block *b){ // supprime et libère un block
 
 // Lecture et écriture de blocs
 void write_block(Block* b){
-    FILE* f = fopen("data/blocks.txt","w");
+    FILE* f = fopen("data/block.txt","w");
     if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
     }
-    fprintf(f,"Author: (%lx,%lx)\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",b->author->s_u,b->author->n,b->hash,b->previous_hash,b->nonce);
+    // fprintf(f,"Author: (%lx,%lx)\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",b->author->s_u,b->author->n,b->hash,b->previous_hash,b->nonce);
+    fprintf(f,"Author: (%lx,%lx)\nHash: ",b->author->s_u,b->author->n);
+
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        fprintf(f, "%02x", b->hash[i]);
+    }
+    
+    fprintf(f,"\nPrevious_hash: ");
+
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        fprintf(f, "%02x", b->previous_hash[i]);
+    }
+
+    fprintf(f,"\nNonce: %d\nListe cp:\n",b->nonce);
+
     CellProtected* temp = b->votes;
     char* pr;
     while(temp){
@@ -93,11 +107,14 @@ char* block_to_str(Block* b){
 
     char* key = key_to_str(b->author);
     strcpy(final,key);
+    strcat(final," ");
 
     // memcpy(prev_hash,b->previous_hash,256);
-
-    sprintf(prev_hash," %s",b->previous_hash);
-    strcat(final,prev_hash);
+    //sprintf(prev_hash," %s",b->previous_hash);
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        sprintf(prev_hash, "%02x", b->previous_hash[i]);
+        strcat(final, prev_hash);
+    }
 
     CellProtected* temp = b->votes;
     while(temp){
@@ -116,7 +133,14 @@ char* block_to_str(Block* b){
     return final;
 }
 
-// // Création de blocs valides
-// char* hash_SHA(char* s){
-//     return SHA256(s, strlen(s), 0);
-// }
+// Création de blocs valides
+char* hash_SHA(const char* s){
+    char* res = (char*)malloc(sizeof(char)*500);
+    char c[256];
+    unsigned char* str = SHA256(s, strlen(s), 0);
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        sprintf(c, "%02x", str[i]);
+        strcat(res, c);
+    }
+    return res;
+}
