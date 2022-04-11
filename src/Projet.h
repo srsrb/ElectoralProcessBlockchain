@@ -157,4 +157,8 @@ Block* read_block(char* txt);
 
 char* block_to_str(Block* b);
 
-char* hash_SHA(const char* s);
+unsigned char* hash_SHA(const char* s);
+
+unsigned char* str_to_hash(char* str);
+
+void compute_proof_of_work(Block *B, int d);

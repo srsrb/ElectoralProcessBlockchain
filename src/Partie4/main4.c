@@ -11,10 +11,10 @@ int main(){
 
     CellProtected** cp = read_protected("data/declarations.txt");
     const char* str = "cgfb";
-    unsigned char* prev = SHA256(str, strlen(str), 0);
+    unsigned char* prev = hash_SHA(str);
 
     const char* s = "Roseode";
-    unsigned char* hash = SHA256(s, strlen(s), 0);
+    unsigned char* hash = SHA256(str, strlen(str), 0);
 
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
         printf("%02x", prev[i]);
@@ -32,21 +32,21 @@ int main(){
 
     write_block(b);
 
-    // delete_block(b);
-    // free(prev);
-    // free(hash);
-    // free(cp);
-
-    // Block* b2 = read_block("data/block.txt");
-
-    char* btostr = block_to_str(b);
-    printf("%s\n", btostr);
-
     delete_block(b);
     free(cp);
-    free(prev);
-    free(hash);
-    free(btostr);
+
+    Block* b2 = read_block("data/block.txt");
+
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        printf("%02x", b2->previous_hash[i]);
+    }
+    putchar('\n');
+
+    //char* btostr = block_to_str(b2);
+    //printf("%s\n", btostr);
+
+    delete_block(b2);
+    //free(btostr);
 
     return 0;
 }
