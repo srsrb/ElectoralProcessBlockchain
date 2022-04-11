@@ -7,7 +7,7 @@
 // EXERCICE 3
 
 // Manipulation de clés
-void init_key(Key* key, long val, long n){ // initialise un clé key déjà allouée
+void init_key(Key* key, long val, long n){ // initialise une clé key déjà allouée
     key->s_u = val;
     key->n = n;
 }
@@ -30,11 +30,11 @@ char* key_to_str(Key* key){ // passe un type key en chaîne de caractères
     return s;
 }
 
-Key *str_to_key(char *str){ // passe une chaîne de caractères en type key
-    Key *key = (Key*)malloc(sizeof(Key));
+Key* str_to_key(char* str){ // passe une chaîne de caractères en type key
+    Key* key = (Key*)malloc(sizeof(Key));
     long val1, val2;
-    sscanf(str,"(%lx,%lx)",&val1,&val2);
-    init_key(key,val1,val2);
+    sscanf(str, "(%lx,%lx)", &val1, &val2);
+    init_key(key, val1, val2);
     return key;
 }
 
@@ -47,7 +47,7 @@ Signature* init_signature(long* content, int size){ // alloue et initialise une 
 }
 
 Signature* sign(char* mess, Key* sKey){ // crée une signature à partir du message mess(déclaration de vote) et de la clé secrète de l'émetteur
-    Signature *s = init_signature(encrypt(mess, sKey->s_u, sKey->n), strlen(mess));
+    Signature* s = init_signature(encrypt(mess, sKey->s_u, sKey->n), strlen(mess));
     return s;
 }
 
@@ -94,17 +94,17 @@ Signature* str_to_signature(char* str){ // passe une chaîne de caractères en t
 }
 
 // Déclarations signées
-Protected *init_protected(Key *pKey, char *mess, Signature *sgn){ // alloue et initialise un protected
-    Protected *prt = (Protected*)malloc(sizeof(Protected));
+Protected* init_protected(Key* pKey, char* mess, Signature* sgn){ // alloue et initialise un protected
+    Protected* prt = (Protected*)malloc(sizeof(Protected));
     prt->pKey = pKey;
     prt->mess = mess;
     prt->sgn = sgn;
     return prt;
 }
 
-int verify(Protected *pr){ // vérifie une déclaration en décryptant le tableau de la signature et le comparant au mess du protected
-    char *mess = decrypt(pr->sgn->T,pr->sgn->size,pr->pKey->s_u,pr->pKey->n);
-    if(strcmp(mess,pr->mess) == 0){
+int verify(Protected* pr){ // vérifie une déclaration en décryptant le tableau de la signature et le comparant au mess du protected
+    char* mess = decrypt(pr->sgn->T, pr->sgn->size, pr->pKey->s_u, pr->pKey->n);
+    if(strcmp(mess, pr->mess) == 0){
         free(mess);
         return 1;
     }
@@ -112,24 +112,24 @@ int verify(Protected *pr){ // vérifie une déclaration en décryptant le tablea
     return 0;
 }
 
-char *protected_to_str(Protected *pr){ // passe du type protected a une chaîne de caractères
-    char *res = (char *)malloc(sizeof(char)*256);
-    char *key = key_to_str(pr->pKey);
-    char *sgn = signature_to_str(pr->sgn);
-    sprintf(res,"%s %s %s", key, pr->mess, sgn);
+char* protected_to_str(Protected* pr){ // passe du type protected à une chaîne de caractères
+    char* res = (char*)malloc(sizeof(char)*256);
+    char* key = key_to_str(pr->pKey);
+    char* sgn = signature_to_str(pr->sgn);
+    sprintf(res, "%s %s %s", key, pr->mess, sgn);
     free(key);
     free(sgn);
     return res;
 }
 
-Protected *str_to_protected(char *str){ // passe une chaîne de caractères en type protected
+Protected* str_to_protected(char* str){ // passe une chaîne de caractères en type protected
     char key[256];
-    char *mess = (char*)malloc(sizeof(char)*256);
+    char* mess = (char*)malloc(sizeof(char)*256);
     char sgnT[256];
-    sscanf(str,"%s %s %s",key,mess,sgnT);
-    Key *pKey = str_to_key(key);
-    Signature *sgn = str_to_signature(sgnT);
-    Protected *pr = init_protected(pKey,mess,sgn);
+    sscanf(str, "%s %s %s", key, mess, sgnT);
+    Key* pKey = str_to_key(key);
+    Signature* sgn = str_to_signature(sgnT);
+    Protected* pr = init_protected(pKey, mess, sgn);
     return pr;
 }
 
@@ -144,6 +144,10 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
     FILE* keys = fopen("data/keys.txt", "w");
     FILE* candidates = fopen("data/candidates.txt", "w");
     FILE* declarations = fopen("data/declarations.txt", "w");
+    if ( keys == NULL || candidates == NULL || declarations == NULL) { // vérifie que fopen se soient bien déroulés
+        printf( "Un ou plusieurs fichiers n'ont pas pu être ouvert\n");
+        exit( 0 );
+    }
     
     char* mess;
     char* prtostr;
@@ -163,7 +167,7 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
         init_pair_keys(tabpKeys[i], tabsKeys[i], 3, 7);
         fprintf(keys, "Publique: (%lx,%lx) Secrète: (%lx,%lx)\n", tabpKeys[i]->s_u, tabpKeys[i]->n, tabsKeys[i]->s_u, tabsKeys[i]->n);
     }
-    // Sélectionne nc clés publiques pour définier nc candidats
+    // Sélectionne nc clés publiques pour définir nc candidats
     while(j < nc){ // tant qu'on a pas nc candidats
         true = 1;
         random = rand()%nv; // on génère un indice au hasard dans notre tableau de citoyens
@@ -207,7 +211,6 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
 }
 
 // FREE
-
 void free_signature(Signature* sgn){ // libère une signature
     free(sgn->T);
     free(sgn);

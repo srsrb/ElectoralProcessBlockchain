@@ -8,8 +8,7 @@
 // EXERCICE 7
 
 // Creation et suppression de blocs
-
-Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned char *previous_hash, int nonce){//initialisation par copie
+Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned char *previous_hash, int nonce){ // initialisation par copie
 	Block* b=(Block*)malloc(sizeof(Block));
 	b->author=k;
 	b->votes=votes;
@@ -19,7 +18,7 @@ Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned ch
 	return b;
 }
 
-void delete_block(Block *b){//désalloue un block
+void delete_block(Block *b){ // supprime et libère un block
 	CellProtected* temp;
     while(b->votes){
         temp = b->votes->next;
@@ -33,7 +32,7 @@ void delete_block(Block *b){//désalloue un block
 // Lecture et écriture de blocs
 void write_block(Block* b){
     FILE* f = fopen("data/blocks.txt","w");
-    if ( f == NULL ) { // vérifie que fopen s'est bien déroulé
+    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
     }
@@ -51,7 +50,7 @@ void write_block(Block* b){
 
 Block* read_block(char* txt){
     FILE* f = fopen(txt, "r");
-    if ( f == NULL ) { // vérifie que fopen s'est bien déroulé
+    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
     }

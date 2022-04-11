@@ -4,6 +4,8 @@
 #include <time.h>
 #include "../Projet.h"
 
+// EXERCICE 5
+
 // Liste chaînée de clés
 CellKey* create_cell_key(Key* key){ // alloue et initialise une cellule de liste chaînée contenant une key
     CellKey* ck = (CellKey*)malloc(sizeof(CellKey));
@@ -20,7 +22,7 @@ void ajouter_en_tete_ck(CellKey** ck, Key* key){ // ajoute une clé en tête de 
 
 CellKey** read_public_keys(char* txt){ // retourne une liste chaînée contenant toutes les clés publiques du fichier txt
     FILE* f = fopen(txt, "r");
-    if (f == NULL){ // vérifie que fopen s'est bien déroulé
+    if (f == NULL){ // vérifie que fopen se soit bien déroulé
         printf("Le fichier n'a pas pu être ouvert\n");
         exit(0);
     }
@@ -31,12 +33,11 @@ CellKey** read_public_keys(char* txt){ // retourne une liste chaînée contenant
     Key* key;
     char buffer[100];
     char str[50];
-    while(fgets(buffer,100,f)){
+    while(fgets(buffer, 100, f)){
         sscanf(buffer, "Publique: %s", str);
         key = str_to_key(str);
         ajouter_en_tete_ck(liste, key);
-    }
-    
+    } 
     fclose(f);
     return liste;
 }
@@ -65,22 +66,22 @@ void delete_list_keys(CellKey** lc){ // supprime et libère la liste lc
 }
 
 // Liste chaînée de déclarations signées
-CellProtected* create_cell_protected(Protected* pr){ // alloue et initialise une cellule de liste chaînée contenant un protected
+CellProtected* create_cell_protected(Protected* pr){ // alloue et initialise une cellule de liste chaînée contenant une protected
     CellProtected* cp = (CellProtected*)malloc(sizeof(CellProtected));
     cp->data = pr;
     cp->next = NULL;
     return cp;
 }
 
-void ajouter_en_tete_cp(CellProtected** cp, Protected* pr){ // ajoute un protected en tête de liste
+void ajouter_en_tete_cp(CellProtected** cp, Protected* pr){ // ajoute une protected en tête de liste
     CellProtected* cp2 = create_cell_protected(pr);
     cp2->next = *cp;
     *cp = cp2;
 }
 
-CellProtected** read_protected(char* txt){ // retourne une liste chaînée contenant toutes protected du fichier txt
+CellProtected** read_protected(char* txt){ // retourne une liste chaînée contenant toutes les protected du fichier txt
     FILE* f = fopen(txt, "r");
-    if ( f == NULL ) { // vérifie que fopen s'est bien déroulé
+    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
     }
@@ -93,7 +94,7 @@ CellProtected** read_protected(char* txt){ // retourne une liste chaînée conte
     char key[50];
     char mess[50];
     char sgn[50];
-    while(fgets(buffer,400,f)){
+    while(fgets(buffer, 400, f)){
         sscanf(buffer, "Declaration: %s %s %s", key, mess, sgn);
         sprintf(buffer,"%s %s %s", key, mess, sgn);
         pr = str_to_protected(buffer);
@@ -104,7 +105,7 @@ CellProtected** read_protected(char* txt){ // retourne une liste chaînée conte
     return liste;
 }
 
-void print_list_protected(CellProtected* LCP){ // affiche une liste chaîne de CellProtected
+void print_list_protected(CellProtected* LCP){ // affiche une liste chaînée de CellProtected
     char* str;
     CellProtected* temp = LCP;
     while(temp){
@@ -115,7 +116,7 @@ void print_list_protected(CellProtected* LCP){ // affiche une liste chaîne de C
     }
 }
 
-void delete_cell_protected(CellProtected* c){ // supprime et libère une cellule d'une liste chaîne de CellPey
+void delete_cell_protected(CellProtected* c){ // supprime et libère une cellule d'une liste chaînée de CellPey
     free_protected(c->data);
     free(c);
 }
@@ -162,13 +163,13 @@ HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une t
     return HC;
 }
 
-int hash_function(Key* key, int size){ // fonction de hachage
+int hash_function(Key* key, int size){ // retourne la position d'une élément dans la table de hachage
     return (key->s_u*key->n)%size;
 }
 
-int find_position(HashTable* t, Key* key){ // Retourne l'indice de la key (si elle n'est pas dedans retourne l'indice ou elle dervra etre) dans le tableau de hachage t
-    int pos = hash_function(key,t->size);
-    while(t->tab[pos] != NULL){ // à chaque tour de boucle, si la case est vide, alors c'est ici que key doit etre placée
+int find_position(HashTable* t, Key* key){ // retourne la position de key dans la table, si elle n'y est pas, retourne la position où elle aurait dû être
+    int pos = hash_function(key, t->size);
+    while(t->tab[pos] != NULL){ // à chaque tour de boucle, si la case est vide, alors c'est ici que key doit être placée
         if(t->tab[pos]->key->s_u != key->s_u || t->tab[pos]->key->n != key->n){ // si la case n'est pas vide mais est déjà occupée par une autre clef, alors on passe à la case suivante
             if(pos == t->size-1){ // si on est à la fin de la table, on revient au début pour trouver une place à key
                 pos = 0;
@@ -188,39 +189,39 @@ HashTable* create_hashtable(CellKey* keys, int size){  // alloue et initialise u
     HashTable* HT = (HashTable*)malloc(sizeof(HashTable));
     HT->size = size;
     HT->tab = (HashCell**)malloc(sizeof(HashCell*)*size);
-    for(int i=0;i<size;i++){ // Il faut initiliser toutes les cases de la table à NULL
+    for(int i = 0; i < size; i++){ // initialisation des cases de tab à NULL
         HT->tab[i] = NULL;
     }
     int pos;
-    while(keys){ // On parcourt la liste keys 
+    while(keys){ // parcours de la liste keys
         pos = find_position(HT, keys->data);
         if(!HT->tab[pos]){
-            HT->tab[pos] = create_hashcell(keys->data); // Si la clef key->data n'est pas dans la table, alors on la place à l'indice retourné par find_postion // Faut-il dupliquer la clef ?
+            HT->tab[pos] = create_hashcell(keys->data); // si la clef key->data n'est pas dans la table, alors on la place à l'indice retourné par find_postion // Faut-il dupliquer la clef ?
         }
         keys = keys->next;
     }
     return HT;
 }
 
-void delete_hashtable(HashTable* t){ // Supprime et libère la table de hachage et les cellules de hachages (Ici on a pas duppliqué les clefs de la liste keys alors on ne les frees pas, on sera peut etre ammené à changer ça)
-    for(int i=0;i<t->size;i++){ // On parcourt la table de hachage t
-        free(t->tab[i]); // On libère chaque cellule de hachage // Faut il aussi free les keys qui sont dans la liste CellKeys passée en paramètre de create_hashtable ?
+void delete_hashtable(HashTable* t){ // supprime et libère la table de hachage et les cellules de hachages (Ici on a pas duppliqué les clefs de la liste keys alors on ne les frees pas, on sera peut etre ammené à changer ça)
+    for(int i = 0; i < t->size; i++){ // parcours la table de hachage t
+        free(t->tab[i]); // on libère chaque cellule de hachage // Faut il aussi free les keys qui sont dans la liste CellKeys passée en paramètre de create_hashtable ?
     }
-    free(t->tab); // On libère la table
-    free(t); // On libère la structure
+    free(t->tab); // on libère la table
+    free(t); // on libère la structure
 }
 
 Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
-    HashTable* Hc = create_hashtable(candidates,sizeC);
-    HashTable* Hv = create_hashtable(voters,sizeV);
+    HashTable* Hc = create_hashtable(candidates, sizeC);
+    HashTable* Hv = create_hashtable(voters, sizeV);
     verify_LCP(&decl);
-    int posC,posV;
+    int posC, posV;
     Key* mess;
     CellProtected* temp = decl;
     while(temp){
         mess = str_to_key(temp->data->mess);
-        posC = find_position(Hc,mess);
-        posV = find_position(Hv,temp->data->pKey);
+        posC = find_position(Hc, mess);
+        posV = find_position(Hv, temp->data->pKey);
         if(Hc->tab[posC] && Hv->tab[posV] && Hv->tab[posV]->val == 0 && Hc->tab[posC]->key->s_u == mess->s_u && Hc->tab[posC]->key->n == mess->n){
             Hv->tab[posV]->val++;
             Hc->tab[posC]->val++;
@@ -230,13 +231,13 @@ Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, i
     }
     int max = 0;
     int posmax = max;
-    for(int i=0;i<Hc->size;i++){
+    for(int i = 0; i < Hc->size; i++){
         if(Hc->tab[i] && Hc->tab[i]->val >= max){ //Ici pas >= mais > -> on verra puisque pas écrit
             max = Hc->tab[i]->val;
             posmax = i;
         }
         // else if(Hc->tab[i]->val == max){
-        //     //On fait quoi ? C'est pas écrit mdrr
+        //     // On fait quoi ? C'est pas écrit mdrr
         // }
     }
 

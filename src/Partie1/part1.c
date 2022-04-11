@@ -19,7 +19,7 @@ int is_prime_naive(long p){  // teste si les entiers de 3 a p-1 divise p
 }
 
 // Exponentiotion modulaire rapide
-long modpow_naive(long a, long m, long n){ // répéte m les opérations: (valeur courante*a)%n
+long modpow_naive(long a, long m, long n){ // répéte m fois les opérations: (valeur courante*a)%n
     int res = 1;
     for(int i = 0; i < m; i++){
         res *= a;

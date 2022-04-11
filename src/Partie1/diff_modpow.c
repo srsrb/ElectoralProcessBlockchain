@@ -3,11 +3,10 @@
 #include <string.h>
 #include <time.h>
 
-
 //1.3
 long modpow_naive(long a, long m, long n){
     long res = 1;
-    for(int i=0; i<m; i++){
+    for(int i = 0; i < m; i++){
         res *= a;
         res = res%n;
     }
@@ -51,9 +50,13 @@ double temps(long a, long m, long n){ // temps pour modpow
 int main(){
 
     FILE* f = fopen("data/1-5.txt", "w");
+    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
+        printf("Le fichier n'a pas pu être ouvert\n");
+        exit( 0 );
+    }
 
     for(long i = 5000; i < 10000; i += 500){
-        fprintf(f,"%.8f %.8f %ld\n", temps(15, i, 5), temps_naive(15, i, 5), i);
+        fprintf(f, "%.8f %.8f %ld\n", temps(15, i, 5), temps_naive(15, i, 5), i);
     }
 
     return 0;
