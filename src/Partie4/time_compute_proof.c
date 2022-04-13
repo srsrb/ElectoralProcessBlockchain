@@ -33,11 +33,16 @@ int main(){
     Block* b = init_block(k2, *cp2, prev2, 0);
 
     for(int i = 1; i < 5; i++){
-       fprintf(f, "%.8f %d\n", temps_compute_proof_of_work(b , i), i);
+        fprintf(f, "%.8f %d\n", temps_compute_proof_of_work(b , i), i);
+        if(i != 4){
+            free(b->hash);
+        }
     }
 
     delete_block(b);
     free(cp2);
+
+    fclose(f);
 
     return 0;
 }

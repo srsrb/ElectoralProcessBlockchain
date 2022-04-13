@@ -30,5 +30,7 @@ int main(){
         fprintf(f, "%.8f %.8f %ld\n", temps(15, i, 5), temps_naive(15, i, 5), i);
     }
 
+    fclose(f);
+
     return 0;
 }
