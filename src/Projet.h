@@ -147,7 +147,7 @@ typedef struct block{
     int nonce;
 } Block;
 
-Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned char *previous_hash, int nonce);
+Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce);
 
 void delete_block(Block *b);
 
@@ -157,8 +157,10 @@ Block* read_block(char* txt);
 
 char* block_to_str(Block* b);
 
-unsigned char* hash_SHA(const char* s);
+unsigned char* hash_SHA(char* s);
 
 unsigned char* str_to_hash(char* str);
 
 void compute_proof_of_work(Block *B, int d);
+
+int verify_block(Block* b, int d);

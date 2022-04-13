@@ -11,6 +11,8 @@ OBJ=./obj
 
 all : main1 main2 main3 main4
 
+time : all time_compute_proof diff_modpow
+
 main1 : $(PART1)/main1.c $(OBJ)/part1.o
 	$(CC) $^ -o $(BIN)/main1.bin $(CFLAGS)
 
@@ -22,6 +24,12 @@ main3 : $(PART3)/main3.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o
 
 main4 : $(PART4)/main4.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/part4.o
 	$(CC) $^ -o $(BIN)/main4.bin $(CFLAGS)
+
+diff_modpow : $(PART1)/diff_modpow.c $(OBJ)/part1.o
+	$(CC) $^ -o $(BIN)/diff_modpow.bin $(CFLAGS)
+
+time_compute_proof : $(PART4)/time_compute_proof.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/part4.o
+	$(CC) $^ -o $(BIN)/time_compute_proof.bin $(CFLAGS)
 
 $(OBJ)/part1.o : $(PART1)/part1.c
 	$(CC) -o $@ -c $^ $(CFLAGS)

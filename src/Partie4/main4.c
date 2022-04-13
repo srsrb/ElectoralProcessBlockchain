@@ -6,16 +6,21 @@
 #include "../Projet.h"
 
 int main(){
+    // Création et initialisation d'une key
     Key* k=(Key*)malloc(sizeof(Key));
     init_key(k, 12345, 54321);
-
+    
+    // Création et initialisation d'une protected
     CellProtected** cp = read_protected("data/declarations.txt");
-    const char* str = "cgfb";
+
+    // TEST HASH_SHA
+    // Création de deux valeurs hachées avec la fonction hash_SHA
+    char* str = "cgfb";
     unsigned char* prev = hash_SHA(str);
+    char* s = "Roseode";
+    unsigned char* hash = hash_SHA(s);
 
-    const char* s = "Roseode";
-    unsigned char* hash = SHA256(str, strlen(str), 0);
-
+    printf("Lecture des valeurs hachées avec la fonction hash_SHA\n");
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
         printf("%02x", prev[i]);
     }
@@ -26,27 +31,63 @@ int main(){
     }
     putchar('\n');
 
-    int nonce = 3;
+    int nonce = 0;
 
-    Block *b = init_block(k, *cp, hash, prev, nonce);
+    // Initialisation d'un block
+    Block *b = init_block(k, *cp, prev, nonce);
+    b->hash = hash;
 
+    // Ecriture d'un block dans data/block.txt
     write_block(b);
 
+    // Librération de la mémoire du block
     delete_block(b);
     free(cp);
 
+    // Lecture d'un block dans data/block.txt
     Block* b2 = read_block("data/block.txt");
 
+    // Passage d'un block à une chaine de charactères
+    printf("\nLecture d'une chaine de charactères représentant un block:\n");
+    char* btostr = block_to_str(b2);
+    printf("%s\n", btostr);
+
+    // Librération de la mémoire du block
+    delete_block(b2);
+    free(btostr);
+
+    // Création et initialisation d'une key
+    Key* k2=(Key*)malloc(sizeof(Key));
+    init_key(k2, 12345, 54321);
+    
+    // Création et initialisation d'une protected
+    CellProtected** cp2 = read_protected("data/declarations.txt");
+    
+    // Création de deux valeurs hachées avec la fonction hash_SHA
+    char* str2 = "cgfb";
+    unsigned char* prev2 = hash_SHA(str2);
+
+    Block* b3 = init_block(k2, *cp2, prev2, 0);
+    compute_proof_of_work(b3, 1);
+    char* btostr2 = block_to_str(b3);
+    printf("Hash après compute_proof_of_work(): %s\n\n", btostr2);
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        printf("%02x", b2->previous_hash[i]);
+        printf("%02x", b3->hash[i]);
     }
     putchar('\n');
 
-    //char* btostr = block_to_str(b2);
-    //printf("%s\n", btostr);
+    // Test fraude
+    if(verify_block(b3, 1)){
+        printf("\nCe block est valide.\n");
+        write_block(b3);
+    }
+    else{
+        printf("\nCe block n'est pas valide.\n");
+    }
 
-    delete_block(b2);
-    //free(btostr);
+    delete_block(b3);
+    free(cp2);
+    free(btostr2);
 
     return 0;
 }

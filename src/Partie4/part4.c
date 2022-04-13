@@ -8,11 +8,11 @@
 // EXERCICE 7
 
 // Creation et suppression de blocs
-Block* init_block(Key *k, CellProtected *votes, unsigned char *hash, unsigned char *previous_hash, int nonce){ // initialisation par copie
+Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce){ // initialisation par copie
 	Block* b=(Block*)malloc(sizeof(Block));
 	b->author=k;
 	b->votes=votes;
-	b->hash=hash;
+	b->hash=NULL;
 	b->previous_hash=previous_hash;
 	b->nonce=nonce;
 	return b;
@@ -24,6 +24,7 @@ void delete_block(Block *b){ // supprime et libère un block
     while(b->votes){
         temp = b->votes->next;
         delete_cell_protected(b->votes);
+        //free(b->votes);
         b->votes = temp;
     }
     free(b->hash);
@@ -106,7 +107,10 @@ Block* read_block(char* txt){
     }
     fclose(f);
 
-    return init_block(author, votes, hash, previous_hash, nonce);
+    Block* b = init_block(author, votes, previous_hash, nonce);
+    b->hash = hash;
+    
+    return b;
 }
 
 char* block_to_str(Block* b){
@@ -121,7 +125,7 @@ char* block_to_str(Block* b){
     strcat(final," ");
 
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        sprintf(prev_hash, "%d", b->previous_hash[i]);
+        sprintf(prev_hash, "%02x", b->previous_hash[i]);
         strcat(final, prev_hash);
     }
 
@@ -138,12 +142,13 @@ char* block_to_str(Block* b){
     strcat(final,nonce);
 
     free(key);
+    final = (char*)realloc(final, (strlen(final)+1)*sizeof(char));
 
     return final;
 }
 
 // Création de blocs valides
-unsigned char* hash_SHA(const char* s){
+unsigned char* hash_SHA(char* s){
     unsigned char* res = (unsigned char*)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
     unsigned char* str = SHA256((const unsigned char*)s, strlen(s), 0);
     for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
@@ -163,7 +168,7 @@ unsigned char* str_to_hash(char* str){
         } else{
             if(pos){
                 buffer[pos] = '\0';
-                sscanf(buffer, "%d", hash+num);
+                sscanf(buffer, "%hhd", hash+num);
                 num++;
                 pos = 0;
             }
@@ -174,5 +179,86 @@ unsigned char* str_to_hash(char* str){
 }
 
 void compute_proof_of_work(Block *B, int d){
+    int i;
+    char* btostr;
+    unsigned char* hash;
+    char temp[10] = "";
+    char htostr[5000] = "";
+    char test[256] = "";  
+    for(i = 0; i < d ; i++){
+        strcat(test, "0");
+    }
 
+    while(1){
+        strcpy(htostr,"");
+        btostr = block_to_str(B);
+        hash = hash_SHA(btostr);
+        for(i = 0; i < d; i++){
+            sprintf(temp, "%02x", hash[i]);
+            strcat(htostr, temp);
+        }
+        strncpy(temp,"",10);
+        strncpy(temp, htostr, d);
+        // printf("\n%s %s\n", temp, test);
+        if(strcmp(temp, test)){
+            free(btostr);
+            free(hash);
+            B->nonce++;
+        }
+        else{ break; }
+    }
+    
+    free(btostr);
+    B->hash = hash;
+
+    return;
+}
+
+int verify_block(Block* b, int d){
+    int i;
+    char temp[10] = "";
+    char htostr[5000] = "";
+    char* btostr;
+    unsigned char* hash;
+
+    btostr = block_to_str(b);
+    hash = hash_SHA(btostr);
+
+    char hash_block[256] = "";
+    char hash_to_verif[256] = "";
+
+    // Hash to Str:
+    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        sprintf(temp, "%02x", b->hash[i]);
+        strcat(hash_block, temp);
+    }
+
+    // Hash to Str:
+    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        sprintf(temp, "%02x", hash[i]);
+        strcat(hash_to_verif, temp);
+    }
+
+    if(strcmp(hash_block,hash_to_verif)){
+        free(btostr);
+        free(hash);
+        return 0;
+    }
+
+    char test[256] = "";  
+    for(i = 0; i < d ; i++){
+        strcat(test, "0");
+    }
+    
+    for(i = 0; i < d; i++){
+        sprintf(temp, "%02x", hash[i]);
+        strcat(htostr, temp);
+    }
+    
+    free(btostr);
+    free(hash);
+    strncpy(temp,"",10);
+    strncpy(temp, htostr, d);
+    
+    return (!strcmp(temp,test));
 }
