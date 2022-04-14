@@ -6,88 +6,30 @@
 #include "../Projet.h"
 
 int main(){
-    // Création et initialisation d'une key
-    Key* k=(Key*)malloc(sizeof(Key));
-    init_key(k, 12345, 54321);
-    
-    // Création et initialisation d'une protected
-    CellProtected** cp = read_protected("data/declarations.txt");
+    CellProtected** liste4 = read_protected("data/declarations.txt");
+    print_list_protected(*liste4);
 
-    // TEST HASH_SHA
-    // Création de deux valeurs hachées avec la fonction hash_SHA
-    char* str = "cgfb";
-    unsigned char* prev = hash_SHA(str);
-    char* s = "Roseode";
-    unsigned char* hash = hash_SHA(s);
+    // TEST FRAUDES CELLPROTECTED
+    printf("\nListe avec possiblement des fraudes (ici il n'y en aura pas car nous avons nous même généré ces déclarations):\n");
+    print_list_protected(*liste4);
 
-    printf("Lecture des valeurs hachées avec la fonction hash_SHA\n");
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        printf("%02x", prev[i]);
-    }
-    putchar('\n');
+    verify_LCP(liste4);
 
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        printf("%02x", hash[i]);
-    }
-    putchar('\n');
+    printf("\nListe sans fraude:\n");
+    print_list_protected(*liste4);
 
-    int nonce = 0;
+    delete_list_protected(liste4);
 
-    // Initialisation d'un block
-    Block *b = init_block(k, *cp, prev, nonce);
-    b->hash = hash;
-
-    // Ecriture d'un block dans data/block.txt
-    write_block(b);
-
-    // Librération de la mémoire du block
-    delete_block(b);
-    free(cp);
-
-    // Lecture d'un block dans data/block.txt
-    Block* b2 = read_block("data/block.txt");
-
-    // Passage d'un block à une chaine de charactères
-    printf("\nLecture d'une chaine de charactères représentant un block:\n");
-    char* btostr = block_to_str(b2);
-    printf("%s\n", btostr);
-
-    // Librération de la mémoire du block
-    delete_block(b2);
-    free(btostr);
-
-    // Création et initialisation d'une key
-    Key* k2=(Key*)malloc(sizeof(Key));
-    init_key(k2, 12345, 54321);
-    
-    // Création et initialisation d'une protected
-    CellProtected** cp2 = read_protected("data/declarations.txt");
-    
-    // Création de deux valeurs hachées avec la fonction hash_SHA
-    char* str2 = "cgfb";
-    unsigned char* prev2 = hash_SHA(str2);
-
-    Block* b3 = init_block(k2, *cp2, prev2, 0);
-    compute_proof_of_work(b3, 1);
-    char* btostr2 = block_to_str(b3);
-    printf("Hash après compute_proof_of_work(): %s\n\n", btostr2);
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        printf("%02x", b3->hash[i]);
-    }
-    putchar('\n');
-
-    // Test fraude
-    if(verify_block(b3, 1)){
-        printf("\nCe block est valide.\n");
-        write_block(b3);
-    }
-    else{
-        printf("\nCe block n'est pas valide.\n");
-    }
-
-    delete_block(b3);
-    free(cp2);
-    free(btostr2);
+    // CALCUL DU VAINQUEUR DE L'ELECTION
+    printf("\nCALCUL DU VAINQUEUR DE L'ELECTION\n");
+    CellKey** candidates = read_public_keys("data/candidates.txt");
+    CellKey** voters = read_public_keys("data/keys.txt");
+    CellProtected** decl = read_protected("data/declarations.txt");
+    Key* winner = compute_winner(*decl, *candidates, *voters, NBC, NBV);
+    printf("Winner = (%lx,%lx)\n", winner->s_u, winner->n);
+    delete_list_keys(candidates);
+    delete_list_keys(voters);
+    delete_list_protected(decl);
 
     return 0;
 }

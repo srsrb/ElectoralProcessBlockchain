@@ -6,13 +6,25 @@ Opt=--leak-check=full
 
 if [ $# -ne 1 ]
 then
-    echo "Vous devez donner en argument le numéro de la partie que vous voulez compiler."
+    echo "Vous devez donner en argument le numéro de la partie (ou modpow / compute_proof) que vous voulez exécuter."
     exit
 fi
 
-if [ $1 -lt 1 -o $1 -ge 7 ]
+if [ $1 == "modpow" ]
 then
-    echo "Il n'y a seulement que 4 parties exécutables. Entrer un chiffre entre 1 et 6."
+    $V $Opt ./bin/diff_modpow.bin
+    exit
+fi
+
+if [ $1 == "compute_proof" ]
+then
+    $V $Opt ./bin/time_compute_proof.bin
+    exit
+fi
+
+if [ $1 -lt 1 -o $1 -ge 6 ]
+then
+    echo "Il n'y a seulement que 5 parties exécutables. Donner en argument un chiffre entre 1 et 5, modpow ou compute_proof."
     exit
 fi
 
@@ -30,9 +42,6 @@ case $1 in
             $V $Opt ./bin/main4.bin
             ;;
         5)
-            $V $Opt ./bin/diff_modpow.bin
-            ;;
-        6)
-            $V $Opt ./bin/time_compute_proof.bin
+            $V $Opt ./bin/main5.bin
             ;;
 esac

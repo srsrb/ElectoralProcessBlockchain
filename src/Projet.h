@@ -89,16 +89,6 @@ typedef struct cellProtected{
     struct cellProtected* next;
 } CellProtected;
 
-typedef struct hashcell{
-    Key* key;
-    int val;
-} HashCell;
-
-typedef struct hashtable{
-    HashCell** tab;
-    int size;
-} HashTable;
-
 CellKey* create_cell_key(Key* key); // 1 malloc
 
 void ajouter_en_tete_ck(CellKey** ck, Key*); // 1 malloc
@@ -123,6 +113,18 @@ void delete_cell_protected(CellProtected* c);
 
 void delete_list_protected(CellProtected** lp);
 
+// PARTIE 4
+
+typedef struct hashcell{
+    Key* key;
+    int val;
+} HashCell;
+
+typedef struct hashtable{
+    HashCell** tab;
+    int size;
+} HashTable;
+
 void verify_LCP(CellProtected** liste);
 
 HashCell* create_hashcell(Key* key); // 1 malloc
@@ -137,7 +139,7 @@ void delete_hashtable(HashTable* t);
 
 Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV);
 
-// PARTIE 4
+// PARTIE 5
 
 typedef struct block{
     Key* author;
@@ -146,6 +148,14 @@ typedef struct block{
     unsigned char* previous_hash;
     int nonce;
 } Block;
+
+typedef struct block_tree_cell {
+    Block * block ;
+    struct block_tree_cell * father ;
+    struct block_tree_cell * firstChild ;
+    struct block_tree_cell * nextBro ;
+    int height ;
+} CellTree ;
 
 Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce);
 
@@ -164,3 +174,19 @@ unsigned char* str_to_hash(char* str);
 void compute_proof_of_work(Block *B, int d);
 
 int verify_block(Block* b, int d);
+
+CellTree* create_node(Block* b);
+
+int update_height(CellTree* father, CellTree* child);
+
+void addchild(CellTree* father, CellTree* child);
+
+void print_tree(CellTree* ct);
+
+void delete_node(CellTree* node);
+
+void delete_tree(CellTree* ct);
+
+CellTree* highest_child(CellTree* cell);
+
+CellTree* last_node(CellTree* tree);

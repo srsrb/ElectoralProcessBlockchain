@@ -2,263 +2,128 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <openssl/sha.h>
 #include "../Projet.h"
 
-// EXERCICE 7
+// EXERCICE 6
 
-// Creation et suppression de blocs
-Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce){ // initialisation par copie
-	Block* b=(Block*)malloc(sizeof(Block));
-	b->author=k;
-	b->votes=votes;
-	b->hash=NULL;
-	b->previous_hash=previous_hash;
-	b->nonce=nonce;
-	return b;
+void verify_LCP(CellProtected** liste){ // supprime de la liste liste les déclarations dont la signature n'est pas valide
+    CellProtected* parcours = *liste;
+    CellProtected* avant = NULL;
+    CellProtected* temp = NULL;
+    while(parcours){
+        if(verify(parcours->data)){ // si la signature est valide on continue
+            avant = parcours;
+            parcours = parcours->next;
+            continue;
+        }
+        if(avant){ // si la cellule n'est pas valide et n'est pas en tête de liste
+            avant->next = parcours->next;
+            delete_cell_protected(parcours);
+            parcours = avant->next;
+        } else{ // la cellule n'est pas valide et est en tête de liste
+            temp = parcours->next;
+            delete_cell_protected(parcours);
+            parcours = temp;
+            *liste = parcours;
+        }
+    }
 }
 
-void delete_block(Block *b){ // supprime et libère un block
-    free(b->author);
-	CellProtected* temp;
-    while(b->votes){
-        temp = b->votes->next;
-        delete_cell_protected(b->votes);
-        //free(b->votes);
-        b->votes = temp;
-    }
-    free(b->hash);
-    free(b->previous_hash);
-	free(b);
+HashCell* create_hashcell(Key* key){ // alloue et initialise une cellule d'une table de hachage contenant une key et une valeur initialisé à 0
+    HashCell* HC = (HashCell*)malloc(sizeof(HashCell));
+    HC->key = key;
+    HC->val = 0;
+    return HC;
 }
 
-// Lecture et écriture de blocs
-void write_block(Block* b){
-    FILE* f = fopen("data/block.txt", "w");
-    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
-        printf( "Le fichier n'a pas pu être ouvert\n");
-        exit( 0 );
-    }
-    int i;
-    // fprintf(f,"Author: (%lx,%lx)\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",b->author->s_u,b->author->n,b->hash,b->previous_hash,b->nonce);
-    fprintf(f,"Author: (%lx,%lx)\nHash: ",b->author->s_u,b->author->n);
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        fprintf(f, "%d#", b->hash[i]);
-    }
-    
-    fprintf(f,"\nPrevious_hash: ");
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        fprintf(f, "%d#", b->previous_hash[i]);
-    }
-
-    fprintf(f,"\nNonce: %d\nListe cp:\n",b->nonce);
-
-    CellProtected* temp = b->votes;
-    char* pr;
-    while(temp){
-        pr = protected_to_str(temp->data);
-        fprintf(f,"%s\n",pr);
-        temp = temp->next;
-        free(pr);
-    }
-    fclose(f);
+int hash_function(Key* key, int size){ // retourne la position d'une élément dans la table de hachage
+    return (key->s_u*key->n)%size;
 }
 
-Block* read_block(char* txt){
-    FILE* f = fopen(txt, "r");
-    if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
-        printf( "Le fichier n'a pas pu être ouvert\n");
-        exit( 0 );
-    }
-
-    int nonce;
-    char key[50];
-    char temp[256];
-    char buffer[256];
-
-    // fscanf(f,"Author: %s\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",key, hash, previous_hash, &nonce);
-    fgets(buffer,256,f);
-    sscanf(buffer,"Author: %s",key);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Hash: %s",temp);
-    unsigned char* hash = str_to_hash(temp);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Previous_hash: %s",temp);
-    unsigned char* previous_hash = str_to_hash(temp);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Nonce: %d", &nonce);
-    fgets(buffer,256,f);
-
-    Key* author = str_to_key(key);
-
-    CellProtected* votes = NULL;
-    Protected* pr;
-    char mess[50];
-    char sgn[50];
-
-    while(fgets(buffer,256,f)){
-        sscanf(buffer, "%s %s %s", key, mess, sgn);
-        sprintf(buffer,"%s %s %s", key, mess, sgn);
-        pr = str_to_protected(buffer);
-        ajouter_en_tete_cp(&votes, pr);
-    }
-    fclose(f);
-
-    Block* b = init_block(author, votes, previous_hash, nonce);
-    b->hash = hash;
-    
-    return b;
-}
-
-char* block_to_str(Block* b){
-    char buffer[100];
-    char nonce[50];
-    char* final = (char*)malloc(sizeof(char)*5000);
-    char* prtostr;
-    char prev_hash[256];
-
-    char* key = key_to_str(b->author);
-    strcpy(final,key);
-    strcat(final," ");
-
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        sprintf(prev_hash, "%02x", b->previous_hash[i]);
-        strcat(final, prev_hash);
-    }
-
-    CellProtected* temp = b->votes;
-    while(temp){
-        prtostr = protected_to_str(temp->data);
-        sprintf(buffer," %s",prtostr);
-        free(prtostr);
-        strcat(final,buffer);
-        temp = temp->next;
-    }
-
-    sprintf(nonce," %d",b->nonce);
-    strcat(final,nonce);
-
-    free(key);
-    final = (char*)realloc(final, (strlen(final)+1)*sizeof(char));
-
-    return final;
-}
-
-// Création de blocs valides
-unsigned char* hash_SHA(char* s){
-    unsigned char* res = (unsigned char*)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
-    unsigned char* str = SHA256((const unsigned char*)s, strlen(s), 0);
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        res[i] = str[i];
-    }
-    return res;
-}
-
-unsigned char* str_to_hash(char* str){
-    unsigned char* hash = (unsigned char*)malloc(sizeof(unsigned char)*256);
-    char buffer[256];
-    int pos = 0, num = 0;
-    for(int i = 0; i < strlen(str); i++){
-        if(str[i] != '#'){
-            buffer[pos] = str[i];
-            pos++;
-        } else{
-            if(pos){
-                buffer[pos] = '\0';
-                sscanf(buffer, "%hhd", hash+num);
-                num++;
+int find_position(HashTable* t, Key* key){ // retourne la position de key dans la table, si elle n'y est pas, retourne la position où elle aurait dû être
+    int pos = hash_function(key, t->size);
+    while(t->tab[pos] != NULL){ // à chaque tour de boucle, si la case est vide, alors c'est ici que key doit être placée
+        if(t->tab[pos]->key->s_u != key->s_u || t->tab[pos]->key->n != key->n){ // si la case n'est pas vide mais est déjà occupée par une autre clef, alors on passe à la case suivante
+            if(pos == t->size-1){ // si on est à la fin de la table, on revient au début pour trouver une place à key
                 pos = 0;
             }
+            else{
+                pos++;
+            }
+        }
+        else{
+            return pos;
         }
     }
-    hash = (unsigned char*)realloc(hash, num*sizeof(unsigned char));
-    return hash;
+    return pos;
 }
 
-void compute_proof_of_work(Block *B, int d){
-    int i;
-    char* btostr;
-    unsigned char* hash;
-    char temp[10] = "";
-    char htostr[5000] = "";
-    char test[256] = "";  
-    for(i = 0; i < d ; i++){
-        strcat(test, "0");
+HashTable* create_hashtable(CellKey* keys, int size){  // alloue et initialise une table de hachage via une liste de clefs <= à sa taille
+    HashTable* HT = (HashTable*)malloc(sizeof(HashTable));
+    HT->size = size;
+    HT->tab = (HashCell**)malloc(sizeof(HashCell*)*size);
+    for(int i = 0; i < size; i++){ // initialisation des cases de tab à NULL
+        HT->tab[i] = NULL;
     }
-
-    while(1){
-        strcpy(htostr,"");
-        btostr = block_to_str(B);
-        hash = hash_SHA(btostr);
-        for(i = 0; i < d; i++){
-            sprintf(temp, "%02x", hash[i]);
-            strcat(htostr, temp);
+    int pos;
+    while(keys){ // parcours de la liste keys
+        pos = find_position(HT, keys->data);
+        if(!HT->tab[pos]){
+            HT->tab[pos] = create_hashcell(keys->data); // si la clef key->data n'est pas dans la table, alors on la place à l'indice retourné par find_postion // Faut-il dupliquer la clef ?
         }
-        strncpy(temp,"",10);
-        strncpy(temp, htostr, d);
-        // printf("\n%s %s\n", temp, test);
-        if(strcmp(temp, test)){
-            free(btostr);
-            free(hash);
-            B->nonce++;
-        }
-        else{ break; }
+        keys = keys->next;
     }
-    
-    free(btostr);
-    B->hash = hash;
-
-    return;
+    return HT;
 }
 
-int verify_block(Block* b, int d){
-    int i;
-    char temp[10] = "";
-    char htostr[5000] = "";
-    char* btostr;
-    unsigned char* hash;
+void delete_hashtable(HashTable* t){ // supprime et libère la table de hachage et les cellules de hachages (Ici on a pas duppliqué les clefs de la liste keys alors on ne les frees pas, on sera peut etre ammené à changer ça)
+    for(int i = 0; i < t->size; i++){ // parcours la table de hachage t
+        free(t->tab[i]); // on libère chaque cellule de hachage // Faut il aussi free les keys qui sont dans la liste CellKeys passée en paramètre de create_hashtable ?
+    }
+    free(t->tab); // on libère la table
+    free(t); // on libère la structure
+}
 
-    btostr = block_to_str(b);
-    hash = hash_SHA(btostr);
-
-    char hash_block[256] = "";
-    char hash_to_verif[256] = "";
-
-    // Hash to Str:
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        sprintf(temp, "%02x", b->hash[i]);
-        strcat(hash_block, temp);
+Key* compute_winner(CellProtected* decl, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
+    HashTable* Hc = create_hashtable(candidates, sizeC);
+    HashTable* Hv = create_hashtable(voters, sizeV);
+    verify_LCP(&decl);
+    int posC, posV;
+    Key* mess;
+    CellProtected* temp = decl;
+    while(temp){
+        mess = str_to_key(temp->data->mess);
+        posC = find_position(Hc, mess);
+        posV = find_position(Hv, temp->data->pKey);
+        if(Hc->tab[posC] && Hv->tab[posV] && Hv->tab[posV]->val == 0 && Hc->tab[posC]->key->s_u == mess->s_u && Hc->tab[posC]->key->n == mess->n){
+            Hv->tab[posV]->val++;
+            Hc->tab[posC]->val++;
+        }
+        free(mess);
+        temp = temp->next;
+    }
+    int max = 0;
+    int posmax = max;
+    for(int i = 0; i < Hc->size; i++){
+        if(Hc->tab[i] && Hc->tab[i]->val >= max){ //Ici pas >= mais > -> on verra puisque pas écrit
+            max = Hc->tab[i]->val;
+            posmax = i;
+        }
+        // else if(Hc->tab[i]->val == max){
+        //     // On fait quoi ? C'est pas écrit mdrr
+        // }
     }
 
-    // Hash to Str:
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        sprintf(temp, "%02x", hash[i]);
-        strcat(hash_to_verif, temp);
+    CellKey* temp2 = candidates;
+    while(temp2){
+        if(temp2->data->n == Hc->tab[posmax]->key->n && temp2->data->s_u == Hc->tab[posmax]->key->s_u){
+            break;
+        }
+        temp2 = temp2->next;
     }
 
-    if(strcmp(hash_block,hash_to_verif)){
-        free(btostr);
-        free(hash);
-        return 0;
-    }
+    delete_hashtable(Hc);
+    delete_hashtable(Hv);
 
-    char test[256] = "";  
-    for(i = 0; i < d ; i++){
-        strcat(test, "0");
-    }
-    
-    for(i = 0; i < d; i++){
-        sprintf(temp, "%02x", hash[i]);
-        strcat(htostr, temp);
-    }
-    
-    free(btostr);
-    free(hash);
-    strncpy(temp,"",10);
-    strncpy(temp, htostr, d);
-    
-    return (!strcmp(temp,test));
+    return temp2->data;
 }
