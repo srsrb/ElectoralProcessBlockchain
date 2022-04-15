@@ -1,4 +1,4 @@
-//PARAMETRES
+// PARAMETRES
 
 #define NBV 10
 #define NBC 2
@@ -165,7 +165,7 @@ void delete_block(Block *b);
 
 void delete_pr_in_block(Block* b);
 
-void write_block(Block* b);
+void write_block(Block* b, char* nomfichier);
 
 Block* read_block(char* txt);
 

@@ -8,7 +8,7 @@
 
 // EXERCICE 7
 
-// Creation et suppression de blocs
+// Création et suppression de blocs
 Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce){ // initialisation par copie
 	Block* b=(Block*)malloc(sizeof(Block));
 	b->author=k;
@@ -26,14 +26,14 @@ Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, in
 	return b;
 }
 
-void delete_block(Block *b){ // supprime et libère un block
+void delete_block(Block *b){ // supprime et libère un bloc
     delete_list_protected_nodata(b->votes);
     if(b->hash){ free(b->hash); }
     free(b->previous_hash);
 	free(b);
 }
 
-void delete_pr_in_block(Block* b){
+void delete_pr_in_block(Block* b){ // supprime et libère les protected d'une liste chainée de CellProtected
     CellProtected* temp = b->votes;
     while(temp){
         free_protected(temp->data);
@@ -42,28 +42,27 @@ void delete_pr_in_block(Block* b){
 }
 
 // Lecture et écriture de blocs
-void write_block(Block* b){
-    FILE* f = fopen("data/block.txt", "w");
+void write_block(Block* b, char* nomfichier){ // écrit dans le fichier nomfichier un bloc
+    FILE* f = fopen(nomfichier, "w");
     if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
     }
-    int i;
-    // fprintf(f,"Author: (%lx,%lx)\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",b->author->s_u,b->author->n,b->hash,b->previous_hash,b->nonce);
-    fprintf(f,"Author: (%lx,%lx)\nHash: ",b->author->s_u,b->author->n);
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
+
+    fprintf(f, "Author: (%lx,%lx)\nHash: ", b->author->s_u, b->author->n);
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
         fprintf(f, "%d#", b->hash[i]);
     }
     
-    fprintf(f,"\nPrevious_hash: ");
-    for(i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        fprintf(f, "%d#", b->previous_hash[i]);
+    fprintf(f, "\nPrevious_hash: ");
+    for(int j = 0; j < SHA256_DIGEST_LENGTH; j++){
+        fprintf(f, "%d#", b->previous_hash[j]);
     }
 
-    fprintf(f,"\nNonce: %d\nListe cp:\n",b->nonce);
+    fprintf(f, "\nNonce: %d\nListe cp:\n", b->nonce);
 
-    CellProtected* temp = b->votes;
     char* pr;
+    CellProtected* temp = b->votes;
     while(temp){
         pr = protected_to_str(temp->data);
         fprintf(f,"%s\n",pr);
@@ -73,8 +72,8 @@ void write_block(Block* b){
     fclose(f);
 }
 
-Block* read_block(char* txt){
-    FILE* f = fopen(txt, "r");
+Block* read_block(char* nomfichier){
+    FILE* f = fopen(nomfichier, "r");
     if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf( "Le fichier n'a pas pu être ouvert\n");
         exit( 0 );
@@ -85,32 +84,26 @@ Block* read_block(char* txt){
     char temp[256];
     char buffer[256];
 
-    // fscanf(f,"Author: %s\nHash: %s\nPrevious_hash: %s\nNonce: %d\nListe cp:\n",key, hash, previous_hash, &nonce);
-    fgets(buffer,256,f);
-    sscanf(buffer,"Author: %s",key);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Hash: %s",temp);
-    unsigned char* hash = str_to_hash(temp);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Previous_hash: %s",temp);
-    unsigned char* previous_hash = str_to_hash(temp);
-
-    fgets(buffer,256,f);
-    sscanf(buffer,"Nonce: %d", &nonce);
-    fgets(buffer,256,f);
-
+    fgets(buffer, 256, f);
+    sscanf(buffer, "Author: %s", key);
     Key* author = str_to_key(key);
 
-    CellProtected* votes = NULL;
-    Protected* pr;
-    char mess[50];
-    char sgn[50];
+    fgets(buffer, 256, f);
+    sscanf(buffer, "Hash: %s", temp);
+    unsigned char* hash = str_to_hash(temp);
 
-    while(fgets(buffer,256,f)){
-        sscanf(buffer, "%s %s %s", key, mess, sgn);
-        sprintf(buffer,"%s %s %s", key, mess, sgn);
+    fgets(buffer, 256, f);
+    sscanf(buffer, "Previous_hash: %s", temp);
+    unsigned char* previous_hash = str_to_hash(temp);
+
+    fgets(buffer, 256, f);
+    sscanf(buffer, "Nonce: %d", &nonce);
+
+    fgets(buffer, 256, f);
+    Protected* pr;
+    CellProtected* votes = NULL;
+
+    while(fgets(buffer, 256, f)){
         pr = str_to_protected(buffer);
         ajouter_en_tete_cp(&votes, pr);
     }
@@ -119,12 +112,7 @@ Block* read_block(char* txt){
     Block* b = init_block(author, votes, previous_hash, nonce);
     b->hash = hash;
 
-    CellProtected* tempv;
-    while(votes){
-        tempv = votes->next;
-        free(votes);
-        votes = tempv;
-    }
+    delete_list_protected_nodata(votes);
     
     return b;
 }
