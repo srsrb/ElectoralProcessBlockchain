@@ -27,15 +27,18 @@ Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, in
 }
 
 void delete_block(Block *b){ // supprime et libère un block
-	CellProtected* temp;
-    while(b->votes){
-        temp = b->votes->next;
-        free(b->votes);
-        b->votes = temp;
-    }
-    if(b->hash){free(b->hash);}
+    delete_list_protected_nodata(b->votes);
+    if(b->hash){ free(b->hash); }
     free(b->previous_hash);
 	free(b);
+}
+
+void delete_pr_in_block(Block* b){
+    CellProtected* temp = b->votes;
+    while(temp){
+        free_protected(temp->data);
+        temp = temp->next;
+    }
 }
 
 // Lecture et écriture de blocs
@@ -293,10 +296,21 @@ int update_height(CellTree* father, CellTree* child){
     return !(h == father->height);
 }
 
+void update_height_all(CellTree* father,CellTree* child){
+    CellTree* tempfather1 = father;
+    CellTree* tempchild1 = child;
+    while(tempfather1){
+        update_height(tempfather1,tempchild1);
+        tempchild1 = tempfather1;
+        tempfather1 = tempfather1->father;
+    }
+}
+
 void addchild(CellTree* father, CellTree* child){
     if(!father->firstChild){
         father->firstChild = child;
-        update_height(father,child);
+        child->father = father;
+        update_height_all(father,child);
         return;
     }
     
@@ -305,7 +319,8 @@ void addchild(CellTree* father, CellTree* child){
         temp = temp->nextBro;
     }
     temp->nextBro = child;
-    update_height(father,child);
+    child->father = father;
+    update_height_all(father,child);
 }
 
 void print_tree(CellTree* ct){
@@ -361,4 +376,40 @@ CellTree* highest_child(CellTree* cell){
     return highest_child;
 }
 
-// CellTree* last_node(CellTree* tree){}
+CellTree* last_node(CellTree* tree){
+    CellTree* temp = tree;
+    while(highest_child(temp)){
+        temp = highest_child(temp);
+    }
+    return temp;
+}
+
+CellProtected* fusion_lcp(CellProtected* lcp1, CellProtected* lcp2){
+    CellProtected* res = NULL;
+
+    CellProtected* temp = lcp1;
+    while(temp){
+        ajouter_en_tete_cp(&res, temp->data);
+        temp = temp->next;
+    }
+
+    temp = lcp2;
+    while(temp){
+        ajouter_en_tete_cp(&res, temp->data);
+        temp = temp->next;
+    }
+    return res;
+}
+
+CellProtected* fusion_tree(CellTree* tree){
+    CellProtected* fathervotes = tree->block->votes;
+    CellProtected* res;
+    CellTree* temp = tree;
+    while(highest_child(temp)){
+        temp = highest_child(temp);
+        res = fusion_lcp(fathervotes, temp->block->votes);
+        if(fathervotes != tree->block->votes){delete_list_protected_nodata(fathervotes);}
+        fathervotes = res;
+    }
+    return res;
+}

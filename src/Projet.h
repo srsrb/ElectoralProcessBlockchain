@@ -113,6 +113,8 @@ void delete_cell_protected(CellProtected* c);
 
 void delete_list_protected(CellProtected** lp);
 
+void delete_list_protected_nodata(CellProtected* lc);
+
 // PARTIE 4
 
 typedef struct hashcell{
@@ -161,6 +163,8 @@ Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, in
 
 void delete_block(Block *b);
 
+void delete_pr_in_block(Block* b);
+
 void write_block(Block* b);
 
 Block* read_block(char* txt);
@@ -179,6 +183,8 @@ CellTree* create_node(Block* b);
 
 int update_height(CellTree* father, CellTree* child);
 
+void update_height_all(CellTree* father,CellTree* child);
+
 void addchild(CellTree* father, CellTree* child);
 
 void print_tree(CellTree* ct);
@@ -190,3 +196,7 @@ void delete_tree(CellTree* ct);
 CellTree* highest_child(CellTree* cell);
 
 CellTree* last_node(CellTree* tree);
+
+CellProtected* fusion_lcp(CellProtected* lcp1, CellProtected* lcp2);
+
+CellProtected* fusion_tree(CellTree* tree);

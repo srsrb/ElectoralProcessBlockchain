@@ -11,6 +11,8 @@ int main(){
     Key* k=(Key*)malloc(sizeof(Key));
     init_key(k, 12345, 54321);
     
+    generate_random_data(5,1);
+
     // Création et initialisation d'une liste de cellules protected
     CellProtected** cp = read_protected("data/declarations.txt");
 
@@ -46,28 +48,19 @@ int main(){
     char* btostr = block_to_str(b2);
     printf("%s\n", btostr);
 
-    // Librération de la mémoire du block
-    free(b2->author);
-	CellProtected* temp;
-    while(b2->votes){
-        temp = b2->votes->next;
-        delete_cell_protected(b2->votes);
-        b2->votes = temp;
-    }
-    if(b2->hash){free(b2->hash);}
-    free(b2->previous_hash);
-	free(b2);
     free(btostr);
 
     // Création et initialisation d'une key
     Key* k2=(Key*)malloc(sizeof(Key));
     init_key(k2, 12345, 54321);
     
+    generate_random_data(7,2);
+
     // Création et initialisation d'une liste de cellules protected
     CellProtected** cp2 = read_protected("data/declarations.txt");
     
     // Création d'une valeur hachée avec la fonction hash_SHA
-    char* str2 = "Previous Hash";
+    char* str2 = "Previous_Hash";
     unsigned char* prev2 = hash_SHA(str2);
 
     Block* b3 = init_block(k2, *cp2, prev2, 0);
@@ -82,7 +75,7 @@ int main(){
     // Test fraude
     if(verify_block(b3, 1)){
         printf("\nCe block est valide.\n");
-        write_block(b3);
+        // write_block(b3);
     }
     else{
         printf("\nCe block n'est pas valide.\n");
@@ -93,27 +86,45 @@ int main(){
     //TESTS ARBRES
 
     CellTree* ct = create_node(b3);
-
     CellTree* ct2 = create_node(b);
+    CellTree* ct3 = create_node(b2);
+
 
     addchild(ct,ct2);
+    addchild(ct2,ct3);
 
     print_tree(ct);
 
     if(highest_child(ct)){
-        printf("\nHighest Child : Height: %d, Hash_block: ",highest_child(ct)->height);
+        printf("\nHighest Child: Height: %d, Hash_block: ",highest_child(ct)->height);
         for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
             printf("%02x", highest_child(ct)->block->hash[i]);
         }
         putchar('\n');
     }
 
-    delete_tree(ct);
-    // Librération de la mémoire du block b
-    free(k);
-    delete_list_protected(cp);
+    printf("\nLast node: ");
+    print_tree(last_node(ct));
 
+    CellProtected* cp3;
+    cp3 = fusion_tree(ct); 
+
+    putchar('\n');
+    printf("Fusion des listes chaı̂nées de déclarations contenues dans les blocs de la plus longue chaı̂ne:\n");
+    print_list_protected(cp3);
+    putchar('\n');
+
+
+    delete_pr_in_block(b2);
+    free(b2->author);
+
+    delete_tree(ct);
+
+    delete_list_protected_nodata(cp3);
+
+    free(k);
     free(k2);
+    delete_list_protected(cp);
     delete_list_protected(cp2);
     free(btostr2);
 

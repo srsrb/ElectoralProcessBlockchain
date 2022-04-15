@@ -130,3 +130,12 @@ void delete_list_protected(CellProtected** lc){ // supprime et libère la liste 
     }
     free(lc);
 }
+
+void delete_list_protected_nodata(CellProtected* lc){ // supprime et libère la liste lc
+    CellProtected* temp;
+    while(lc){
+        temp = lc->next;
+        free(lc);
+        lc = temp;
+    }
+}
