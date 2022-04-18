@@ -22,6 +22,13 @@ then
     exit
 fi
 
+if [ $1 == "main" ]
+then
+    $V $Opt ./bin/main.bin
+    exit
+fi
+
+
 if [ $1 -lt 1 -o $1 -ge 6 ]
 then
     echo "Il n'y a seulement que 5 parties exécutables. Donner en argument un chiffre entre 1 et 5, modpow ou compute_proof."

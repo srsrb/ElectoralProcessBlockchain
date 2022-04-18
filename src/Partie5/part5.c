@@ -228,7 +228,7 @@ void compute_proof_of_work(Block *B, int d){
     return;
 }
 
-int verify_block(Block* b, int d){
+int verify_block(Block* b, int d){ // retourne 1 si valide et 0 si faux
     int i;
     char temp[10] = "";
     char htostr[5000] = "";
@@ -391,14 +391,14 @@ void delete_author_in_tree(CellTree* ct){
         return;
     }
     if(ct->nextBro && !ct->firstChild){
-        delete_pr_in_tree(ct->nextBro);
+        delete_author_in_tree(ct->nextBro);
     }
     if(ct->firstChild && !ct->nextBro){
-        delete_pr_in_tree(ct->firstChild);
+        delete_author_in_tree(ct->firstChild);
     }
     if(ct->firstChild && ct->nextBro){
-        delete_pr_in_tree(ct->nextBro);
-        delete_pr_in_tree(ct->firstChild);
+        delete_author_in_tree(ct->nextBro);
+        delete_author_in_tree(ct->firstChild);
     }
     free(ct->block->author);
 }
@@ -467,17 +467,23 @@ void submit_vote(Protected* p){
     fclose(f);
 }
 
-void create_block(CellTree* tree, Key* author, int d){
+void create_block(CellTree** tree, Key* author, int d){
     CellProtected** lcp = read_protected("data/Pending_votes.txt");
 
     Block* b;
 
-    if(tree){
-        unsigned char* prev_hash = last_node(tree)->block->hash;
+    if(*tree){
+        unsigned char* prev_hash = (unsigned char*)malloc(sizeof(unsigned char)*SHA256_DIGEST_LENGTH);
+        for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+            prev_hash[i] = last_node(*tree)->block->hash[i];
+        }
         b = init_block(author, *lcp, prev_hash);
+        CellTree* child = create_node(b);
+        addchild(last_node(*tree), child);
     }
     else{
         b = init_block(author, *lcp, NULL);
+        *tree = create_node(b);
     }
 
     compute_proof_of_work(b, d);
@@ -486,17 +492,18 @@ void create_block(CellTree* tree, Key* author, int d){
     
     write_block(b, "data/Pending_block.txt");
 
-    delete_list_protected(lcp);
-    delete_block(b);
+    delete_list_protected_nodata(*lcp);
+    free(lcp);
 }
 
 void add_block(int d, char* name){
     Block* b = read_block("data/Pending_block.txt");
-    verify_block(b, d);
-    char str[256] = "data/Blockchain/";
-    strcat(str, name);
-    write_block(b, str);
-    remove("data/Pending_block.txt");
+    if(verify_block(b, d)){
+        char str[256] = "data/Blockchain/";
+        strcat(str, name);
+        write_block(b, str);
+        remove("data/Pending_block.txt");
+    }
 
     free(b->author);
     delete_pr_in_block(b);
@@ -562,6 +569,7 @@ CellTree* read_tree(){
             }
             if(k == SHA256_DIGEST_LENGTH){
                 addchild(T[i], T[j]);
+                k = 0;
             }
         }
     }
@@ -576,4 +584,16 @@ CellTree* read_tree(){
 
     free(T);
     return res;
+}
+
+Key* compute_winner_BT(CellTree* tree, CellKey* candidates, CellKey* voters, int sizeC, int sizeV){
+    CellProtected* lcp = fusion_tree(tree);
+
+    verify_LCP(&lcp);
+
+    Key* winner = compute_winner(lcp, candidates, voters, sizeC, sizeV);
+
+    delete_list_protected_nodata(lcp);
+    
+    return winner;
 }

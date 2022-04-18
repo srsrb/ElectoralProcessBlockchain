@@ -3,8 +3,8 @@
 
 // PARAMETRES
 
-#define NBV 10
-#define NBC 2
+#define NBV 1000
+#define NBC 5
 
 // PARTIE 1
 
@@ -212,7 +212,7 @@ CellProtected* fusion_tree(CellTree* tree);
 
 void submit_vote(Protected* p);
 
-void create_block(CellTree* tree, Key* author, int d);
+void create_block(CellTree** tree, Key* author, int d);
 
 void add_block(int d, char* name);
 

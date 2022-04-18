@@ -10,9 +10,9 @@ PART5=./src/Partie5
 BIN=./bin
 OBJ=./obj
 
-all : main time_compute_proof diff_modpow
+all : mains time_compute_proof diff_modpow
 
-main : main1 main2 main3 main4 main5
+mains : main1 main2 main3 main4 main5 main
 
 main1 : $(PART1)/main1.c $(OBJ)/part1.o
 	$(CC) $^ -o $(BIN)/main1.bin $(CFLAGS)
@@ -28,6 +28,9 @@ main4 : $(PART4)/main4.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/par
 
 main5 : $(PART5)/main5.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/part4.o $(OBJ)/part5.o
 	$(CC) $^ -o $(BIN)/main5.bin $(CFLAGS)
+
+main : $(PART5)/main.c $(OBJ)/part1.o $(OBJ)/part2.o $(OBJ)/part3.o $(OBJ)/part4.o $(OBJ)/part5.o
+	$(CC) $^ -o $(BIN)/main.bin $(CFLAGS)
 
 diff_modpow : $(PART1)/diff_modpow.c $(OBJ)/part1.o
 	$(CC) $^ -o $(BIN)/diff_modpow.bin $(CFLAGS)
