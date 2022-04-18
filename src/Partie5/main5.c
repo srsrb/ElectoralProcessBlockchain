@@ -34,10 +34,8 @@ int main(){
     }
     putchar('\n');
 
-    int nonce = 0;
-
     // Initialisation d'un block
-    Block *b = init_block(k, *cp, prev, nonce);
+    Block *b = init_block(k, *cp, prev);
     b->hash = hash;
 
     // Lecture d'un block dans data/block.txt
@@ -63,7 +61,7 @@ int main(){
     char* str2 = "Previous_Hash";
     unsigned char* prev2 = hash_SHA(str2);
 
-    Block* b3 = init_block(k2, *cp2, prev2, 0);
+    Block* b3 = init_block(k2, *cp2, prev2);
     compute_proof_of_work(b3, 1);
     char* btostr2 = block_to_str(b3);
     printf("\nHash après compute_proof_of_work(): %s\n\n", btostr2);
@@ -110,7 +108,7 @@ int main(){
     cp3 = fusion_tree(ct); 
 
     putchar('\n');
-    printf("Fusion des listes chaı̂nées de déclarations contenues dans les blocs de la plus longue chaı̂ne:\n");
+    printf("Fusion des listes chaînées de déclarations contenues dans les blocs de la plus longue chaîne:\n");
     print_list_protected(cp3);
     putchar('\n');
 
@@ -127,6 +125,37 @@ int main(){
     delete_list_protected(cp);
     delete_list_protected(cp2);
     free(btostr2);
+
+
+    // SIMULATION PROCESSUS DE VOTE
+
+    Protected* p = str_to_protected("(b5d,1555) (69,9bb) #a9e#de9#272#388#272#47#47#127e#");
+
+    submit_vote(p);
+
+    free_protected(p);
+
+    CellTree* tree = NULL;
+
+    Key* author = (Key*)malloc(sizeof(Key));
+
+    init_key(author, 1000, 265);
+
+    create_block(tree, author, 1);
+
+    free(author);
+
+    add_block(1, "name.txt");
+
+    // LECTURE DE L'ARBRE ET CALCUL DU GAGNANT
+
+    CellTree* tree2 = read_tree();
+
+    print_tree(tree2);
+
+    delete_author_in_tree(tree2);
+    delete_pr_in_tree(tree2);
+    delete_tree(tree2);
 
     return 0;
 }

@@ -142,9 +142,17 @@ void generate_random_data(int nv, int nc){ // génère keys.txt, candidates.txt,
         return;
     }
     FILE* keys = fopen("data/keys.txt", "w");
+    if (keys == NULL) { // vérifie que fopen se soient bien déroulés
+        printf( "Un ou plusieurs fichiers n'ont pas pu être ouvert\n");
+        exit( 0 );
+    }
     FILE* candidates = fopen("data/candidates.txt", "w");
+    if (candidates == NULL) { // vérifie que fopen se soient bien déroulés
+        printf( "Un ou plusieurs fichiers n'ont pas pu être ouvert\n");
+        exit( 0 );
+    }
     FILE* declarations = fopen("data/declarations.txt", "w");
-    if ( keys == NULL || candidates == NULL || declarations == NULL) { // vérifie que fopen se soient bien déroulés
+    if (declarations == NULL) { // vérifie que fopen se soient bien déroulés
         printf( "Un ou plusieurs fichiers n'ont pas pu être ouvert\n");
         exit( 0 );
     }

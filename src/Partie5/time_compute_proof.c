@@ -30,7 +30,7 @@ int main(){
     char* str = "a";
     unsigned char* prev = hash_SHA(str);
 
-    Block* b = init_block(k, *cp, prev, 0);
+    Block* b = init_block(k, *cp, prev);
 
     for(int i = 1; i < 6; i++){
         fprintf(f, "%.8f %d\n", temps_compute_proof_of_work(b , i), i);

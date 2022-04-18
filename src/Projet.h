@@ -1,3 +1,6 @@
+#ifndef PROJET_H
+#define PROJET_H
+
 // PARAMETRES
 
 #define NBV 10
@@ -159,7 +162,7 @@ typedef struct block_tree_cell {
     int height ;
 } CellTree ;
 
-Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce);
+Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash);
 
 void delete_block(Block *b);
 
@@ -191,7 +194,13 @@ void print_tree(CellTree* ct);
 
 void delete_node(CellTree* node);
 
+void delete_pr_in_node(CellTree* node);
+
 void delete_tree(CellTree* ct);
+
+void delete_pr_in_tree(CellTree* ct);
+
+void delete_author_in_tree(CellTree* ct);
 
 CellTree* highest_child(CellTree* cell);
 
@@ -200,3 +209,15 @@ CellTree* last_node(CellTree* tree);
 CellProtected* fusion_lcp(CellProtected* lcp1, CellProtected* lcp2);
 
 CellProtected* fusion_tree(CellTree* tree);
+
+void submit_vote(Protected* p);
+
+void create_block(CellTree* tree, Key* author, int d);
+
+void add_block(int d, char* name);
+
+CellTree* read_tree();
+
+Key* compute_winner_BT(CellTree* tree, CellKey* candidates, CellKey* voters, int sizeC, int sizeV);
+
+#endif

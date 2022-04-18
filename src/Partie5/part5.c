@@ -2,16 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <openssl/sha.h>
 #include <math.h>
+#include <dirent.h>
+#include <openssl/sha.h>
 #include "../Projet.h"
 
 // EXERCICE 7
 
 // Création et suppression de blocs
-Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, int nonce){ // initialisation par copie
-	Block* b=(Block*)malloc(sizeof(Block));
-	b->author=k;
+Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash){ // initialisation par copie
+	Block* b = (Block*)malloc(sizeof(Block));
+	b->author = k;
 
     CellProtected* tempv = votes;
     b->votes = NULL;
@@ -20,16 +21,16 @@ Block* init_block(Key *k, CellProtected *votes, unsigned char *previous_hash, in
         tempv = tempv->next;
     }
 	
-    b->hash=NULL;
-	b->previous_hash=previous_hash;
-	b->nonce=nonce;
+    b->hash = NULL;
+	b->previous_hash = previous_hash;
+    b->nonce = 0;
 	return b;
 }
 
 void delete_block(Block *b){ // supprime et libère un bloc
     delete_list_protected_nodata(b->votes);
     if(b->hash){ free(b->hash); }
-    free(b->previous_hash);
+    if(b->previous_hash){ free(b->previous_hash); }
 	free(b);
 }
 
@@ -55,8 +56,10 @@ void write_block(Block* b, char* nomfichier){ // écrit dans le fichier nomfichi
     }
     
     fprintf(f, "\nPrevious_hash: ");
-    for(int j = 0; j < SHA256_DIGEST_LENGTH; j++){
-        fprintf(f, "%d#", b->previous_hash[j]);
+    if(b->previous_hash){
+        for(int j = 0; j < SHA256_DIGEST_LENGTH; j++){
+            fprintf(f, "%d#", b->previous_hash[j]);
+        }
     }
 
     fprintf(f, "\nNonce: %d\nListe cp:\n", b->nonce);
@@ -92,9 +95,13 @@ Block* read_block(char* nomfichier){
     sscanf(buffer, "Hash: %s", temp);
     unsigned char* hash = str_to_hash(temp);
 
+    unsigned char* previous_hash = NULL;
+    temp[0] = '\0';
     fgets(buffer, 256, f);
     sscanf(buffer, "Previous_hash: %s", temp);
-    unsigned char* previous_hash = str_to_hash(temp);
+    if(temp[0] != '\0'){
+        previous_hash = str_to_hash(temp);
+    }
 
     fgets(buffer, 256, f);
     sscanf(buffer, "Nonce: %d", &nonce);
@@ -109,8 +116,9 @@ Block* read_block(char* nomfichier){
     }
     fclose(f);
 
-    Block* b = init_block(author, votes, previous_hash, nonce);
+    Block* b = init_block(author, votes, previous_hash);
     b->hash = hash;
+    b->nonce = nonce;
 
     delete_list_protected_nodata(votes);
     
@@ -125,12 +133,14 @@ char* block_to_str(Block* b){
     char prev_hash[256];
 
     char* key = key_to_str(b->author);
-    strcpy(final,key);
-    strcat(final," ");
+    strcpy(final, key);
+    strcat(final, " ");
 
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
-        sprintf(prev_hash, "%02x", b->previous_hash[i]);
-        strcat(final, prev_hash);
+    if(b->previous_hash){
+        for(int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+            sprintf(prev_hash, "%02x", b->previous_hash[i]);
+            strcat(final, prev_hash);
+        }
     }
 
     CellProtected* temp = b->votes;
@@ -243,7 +253,7 @@ int verify_block(Block* b, int d){
         strcat(hash_to_verif, temp);
     }
 
-    if(strcmp(hash_block,hash_to_verif)){
+    if(strcmp(hash_block, hash_to_verif)){
         free(btostr);
         free(hash);
         return 0;
@@ -312,6 +322,10 @@ void addchild(CellTree* father, CellTree* child){
 }
 
 void print_tree(CellTree* ct){
+    if(!ct){
+        printf("Cet arbre est vide.\n");
+        return;
+    }
     if(ct->nextBro && !ct->firstChild){
         print_tree(ct->nextBro);
     }
@@ -334,7 +348,14 @@ void delete_node(CellTree* node){
     free(node);
 }
 
+void delete_pr_in_node(CellTree* node){
+    delete_pr_in_block(node->block);
+}
+
 void delete_tree(CellTree* ct){
+    if(!ct){
+        return;
+    }
     if(ct->nextBro && !ct->firstChild){
         delete_tree(ct->nextBro);
     }
@@ -348,7 +369,43 @@ void delete_tree(CellTree* ct){
     delete_node(ct);
 }
 
+void delete_pr_in_tree(CellTree* ct){
+    if(!ct){
+        return;
+    }
+    if(ct->nextBro && !ct->firstChild){
+        delete_pr_in_tree(ct->nextBro);
+    }
+    if(ct->firstChild && !ct->nextBro){
+        delete_pr_in_tree(ct->firstChild);
+    }
+    if(ct->firstChild && ct->nextBro){
+        delete_pr_in_tree(ct->nextBro);
+        delete_pr_in_tree(ct->firstChild);
+    }
+    delete_pr_in_node(ct);
+}
+
+void delete_author_in_tree(CellTree* ct){
+    if(!ct){
+        return;
+    }
+    if(ct->nextBro && !ct->firstChild){
+        delete_pr_in_tree(ct->nextBro);
+    }
+    if(ct->firstChild && !ct->nextBro){
+        delete_pr_in_tree(ct->firstChild);
+    }
+    if(ct->firstChild && ct->nextBro){
+        delete_pr_in_tree(ct->nextBro);
+        delete_pr_in_tree(ct->firstChild);
+    }
+    free(ct->block->author);
+}
+
 CellTree* highest_child(CellTree* cell){
+    if(!cell){ return NULL; }
+
     int highest = 0;
 
     CellTree* temp = cell->firstChild;
@@ -399,5 +456,124 @@ CellProtected* fusion_tree(CellTree* tree){
         if(fathervotes != tree->block->votes){delete_list_protected_nodata(fathervotes);}
         fathervotes = res;
     }
+    return res;
+}
+
+void submit_vote(Protected* p){
+    FILE* f = fopen("data/Pending_votes.txt", "a");
+    char* ptostr = protected_to_str(p);
+    fprintf(f, "Declaration: %s\n", ptostr);
+    free(ptostr);
+    fclose(f);
+}
+
+void create_block(CellTree* tree, Key* author, int d){
+    CellProtected** lcp = read_protected("data/Pending_votes.txt");
+
+    Block* b;
+
+    if(tree){
+        unsigned char* prev_hash = last_node(tree)->block->hash;
+        b = init_block(author, *lcp, prev_hash);
+    }
+    else{
+        b = init_block(author, *lcp, NULL);
+    }
+
+    compute_proof_of_work(b, d);
+
+    remove("data/Pending_votes.txt");
+    
+    write_block(b, "data/Pending_block.txt");
+
+    delete_list_protected(lcp);
+    delete_block(b);
+}
+
+void add_block(int d, char* name){
+    Block* b = read_block("data/Pending_block.txt");
+    verify_block(b, d);
+    char str[256] = "data/Blockchain/";
+    strcat(str, name);
+    write_block(b, str);
+    remove("data/Pending_block.txt");
+
+    free(b->author);
+    delete_pr_in_block(b);
+    delete_block(b);
+}
+
+CellTree* read_tree(){
+    DIR* rep = opendir("./data/Blockchain");
+    if(!rep){
+        printf("Le répertoire n'a pas pu être ouvert");
+        exit( 0 );
+    }
+
+    int nb_files = 0;
+    struct dirent* dir;
+    while((dir = readdir(rep))){
+        if(strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0){
+            nb_files++;
+        }
+    }
+
+    closedir(rep);
+
+    int i = 0;
+
+    CellTree** T = (CellTree**)malloc(sizeof(CellTree*)*nb_files);
+    for(i = 0; i < nb_files; i++){
+        T[i] = NULL;
+    }
+
+    char str[256];
+
+    DIR* rep2 = opendir("./data/Blockchain");
+    if(!rep2){
+        printf("Le répertoire n'a pas pu être ouvert");
+        exit( 0 );
+    }
+
+    i = 0;
+
+    struct dirent* dir2;
+    while((dir2 = readdir(rep2))){
+        if(strcmp(dir2->d_name, ".") != 0 && strcmp(dir2->d_name, "..") != 0){
+            str[0] = '\0';
+            strcat(str, "data/Blockchain/");
+            strcat(str, dir2->d_name);
+            T[i] = create_node(read_block(str));
+            i++;
+        }
+    }
+    closedir(rep2);
+    
+    int j, k = 0;
+
+    for(i = 0; i < nb_files; i++){
+        for(j = 0; j < nb_files; j++){
+            if(T[j]->block->previous_hash){
+                for(k = 0; k < SHA256_DIGEST_LENGTH; k++){
+                    if(T[i]->block->hash[k] != T[j]->block->previous_hash[k]){
+                        break;
+                    }
+                }
+            }
+            if(k == SHA256_DIGEST_LENGTH){
+                addchild(T[i], T[j]);
+            }
+        }
+    }
+
+    CellTree* res = NULL;
+
+    for(i = 0; i < nb_files; i++){
+        if(!T[i]->father){
+            res = T[i];
+        }
+    }
+
+    free(T);
     return res;
 }
