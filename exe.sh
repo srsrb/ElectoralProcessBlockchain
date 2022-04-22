@@ -6,7 +6,7 @@ Opt=--leak-check=full
 
 if [ $# -ne 1 ]
 then
-    echo "Vous devez donner en argument le numéro de la partie (ou modpow / compute_proof) que vous voulez exécuter."
+    echo "Vous devez donner en argument le numéro d'une des cinq parties, modpow, compute_proof ou main pour pouvoir l'exécuter."
     exit
 fi
 
@@ -28,10 +28,9 @@ then
     exit
 fi
 
-
 if [ $1 -lt 1 -o $1 -ge 6 ]
 then
-    echo "Il n'y a seulement que 5 parties exécutables. Donner en argument un chiffre entre 1 et 5, modpow ou compute_proof."
+    echo "L'argument n'est pas valable, veuillez entrer une valeur entre 1 et 5, modpow, compute_proof ou main."
     exit
 fi
 

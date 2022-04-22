@@ -19,7 +19,6 @@ double temps(long a, long m, long n){ // temps pour modpow
 }
 
 int main(){
-
     FILE* f = fopen("data/diff_modpow.txt", "w");
     if ( f == NULL ) { // vérifie que fopen se soit bien déroulé
         printf("Le fichier n'a pas pu être ouvert\n");

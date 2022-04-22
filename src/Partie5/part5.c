@@ -289,8 +289,7 @@ CellTree* create_node(Block* b){
 
 int update_height(CellTree* father, CellTree* child){
     int h = father->height;
-    father->height = (int)fmax(h,child->height+1);
-
+    father->height = (int)fmax(h, child->height+1);
     return !(h == father->height);
 }
 
