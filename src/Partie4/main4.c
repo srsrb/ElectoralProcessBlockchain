@@ -7,7 +7,6 @@
 
 int main(){
     CellProtected** liste4 = read_protected("data/declarations.txt");
-    print_list_protected(*liste4);
 
     // TEST FRAUDES CELLPROTECTED
     printf("\nListe avec possiblement des fraudes (ici il n'y en aura pas car nous avons nous même généré ces déclarations):\n");

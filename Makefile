@@ -55,6 +55,7 @@ $(OBJ)/part5.o : $(PART5)/part5.c
 
 clean :
 	rm $(OBJ)/*
+	rm ./data/Blockchain/*.txt
 
 bigclean: clean
 	rm $(BIN)/*

@@ -39,7 +39,7 @@ int main(){
     b->hash = hash;
 
     // Lecture d'un block dans data/block.txt
-    Block* b2 = read_block("data/block.txt");
+    Block* b2 = read_block("data/Blockchain/Block1.txt");
 
     // Passage d'un block à une chaine de charactères
     printf("\nLecture d'une chaine de charactères représentant un block:\n");
@@ -145,7 +145,7 @@ int main(){
 
     free(author);
 
-    add_block(1, "name.txt");
+    add_block(1, "data/Blockchain/Block1.txt"); // ICI FAUT CHANGER 
 
     Protected* p2 = str_to_protected("(17f9,1a4b) (821,daf) #16b9#84b#1550#d0#41b#14ae#3e6#189f#fb0#");
 

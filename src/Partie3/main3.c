@@ -28,7 +28,7 @@ int main(){
     free(liste);
 
     // GENERATION DE RANDOM KEYS ET DECLARATIONS DANS LE DOSSIER DATA
-    generate_random_data(NBV,NBC);
+    generate_random_data(10,2);
 
     // TEST READ CELLKEYS
     printf("\nTEST READ CELLKEYS\n");
