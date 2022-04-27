@@ -39,7 +39,7 @@ int main(){
     b->hash = hash;
 
     // Lecture d'un block dans data/block.txt
-    Block* b2 = read_block("data/Blockchain/Block1.txt");
+    Block* b2 = read_block("data/Blockchain/Block1.txt"); // ATTENTION SI IL N'Y A PAS CE FICHIER TXT -> LANCER ./exe.sh main D'ABORD !
 
     // Passage d'un block à une chaine de charactères
     printf("\nLecture d'une chaine de charactères représentant un block:\n");
@@ -125,60 +125,6 @@ int main(){
     delete_list_protected(cp);
     delete_list_protected(cp2);
     free(btostr2);
-
-
-    // SIMULATION PROCESSUS DE VOTE
-
-    Protected* p = str_to_protected("(b5d,1555) (69,9bb) #a9e#de9#272#388#272#47#47#127e#");
-
-    submit_vote(p);
-
-    free_protected(p);
-
-    CellTree* tree = NULL;
-
-    Key* author = (Key*)malloc(sizeof(Key));
-
-    init_key(author, 1000, 265);
-
-    create_block(&tree, author, 1);
-
-    free(author);
-
-    add_block(1, "data/Blockchain/Block1.txt"); // ICI FAUT CHANGER 
-
-    Protected* p2 = str_to_protected("(17f9,1a4b) (821,daf) #16b9#84b#1550#d0#41b#14ae#3e6#189f#fb0#");
-
-    submit_vote(p2);
-
-    free_protected(p2);
-
-    Key* author2 = (Key*)malloc(sizeof(Key));
-
-    init_key(author2, 1, 2);
-
-    create_block(&tree, author2, 1);
-
-    free(author2);
-
-    add_block(1, "name2.txt");
-
-    print_tree(tree);
-    putchar('\n');
-
-    delete_pr_in_tree(tree);
-    delete_tree(tree);
-
-    // LECTURE DE L'ARBRE ET CALCUL DU GAGNANT
-    printf("LECTURE DE L'ARBRE ET CALCUL DU GAGNANT\n\n");
-
-    CellTree* tree2 = read_tree();
-
-    print_tree(tree2);
-
-    delete_author_in_tree(tree2);
-    delete_pr_in_tree(tree2);
-    delete_tree(tree2);
 
     return 0;
 }
