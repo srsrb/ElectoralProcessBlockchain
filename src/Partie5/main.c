@@ -33,10 +33,10 @@ int main(){
             sscanf(str, "%s", strkey);
             author = str_to_key(strkey);
             
-            create_block(&tree, author, 1);
+            create_block(&tree, author, D);
 
             sprintf(name, "Block%d.txt", j);
-            add_block(1, name);
+            add_block(D, name);
 
             free(str);
     
@@ -51,10 +51,10 @@ int main(){
         temp = temp->next;
     }
     if(i != 0){
-        create_block(&tree, author, 1);
+        create_block(&tree, author, D);
 
         sprintf(name, "Block%d.txt", j);
-        add_block(1, name);
+        add_block(D, name);
 
         free(str);
     }

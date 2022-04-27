@@ -5,6 +5,7 @@
 
 #define NBV 1000
 #define NBC 5
+#define D 2
 
 // PARTIE 1
 
