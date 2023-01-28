@@ -1,4 +1,4 @@
-# PROJET-SDD
+# ElectoralProcessBlockchain
  **Blockchain appliquée à un processus éléctoral**
 
 # Comment exécuter ?
